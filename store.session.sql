@@ -16,7 +16,8 @@ CREATE TABLE users (
 CREATE TABLE product (
     id UUID PRIMARY KEY,
     name VARCHAR(100) UNIQUE,
-    quantity INTEGER,
+    description TEXT,
+    quantity INTEGER, 
     price INTEGER,
     original_price INTEGER
 );
@@ -35,5 +36,14 @@ CREATE TABLE sales_history (
 -- DROP TABLE card;
 
 SELECT * FROM users;
--- SELECT * FROM card;
--- SELECT * FROM product;
+SELECT * FROM card;
+SELECT * FROM sales_history;
+SELECT * FROM product;
+
+SELECT 
+u.full_name, 
+u.password, 
+u.email,
+c.card_number,
+c.balance FROM users AS u 
+JOIN card AS c ON u.card_id=c.id;

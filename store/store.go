@@ -23,14 +23,14 @@ func Sell(p product.Product, quantity int, u user.User, exist bool, w http.Respo
 	if !exist {
 		io.WriteString(w, "product with this name not found\n")
 		io.WriteString(w, "we will bring this product the next time")
-		newProduct := product.New(p.Name, quantity, generateRandomPrice(1000, 2000))
+		newProduct := product.New(p.Name, p.Description, quantity, generateRandomPrice(1000, 2000))
 		return Sales{}, *newProduct
 	}
 	if p.Quantity < quantity {
 		msg := fmt.Sprintf("not enough products: only %d left\n", p.Quantity)
 		io.WriteString(w, msg)
 		io.WriteString(w, "we will bring this product the next time")
-		newProduct := product.New(p.Name, quantity, generateRandomPrice(1000, 2000))
+		newProduct := product.New(p.Name, p.Description, quantity, generateRandomPrice(1000, 2000))
 		return Sales{}, *newProduct
 	}
 
