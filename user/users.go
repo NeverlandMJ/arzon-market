@@ -13,24 +13,20 @@ type User struct {
 
 type Card struct {
 	ID         string `json:"id,omitempty"`
-	CardNumber int    `json:"card_number,omitempty"`
+	CardNumber string    `json:"card_number,omitempty"`
 	Balance    int    `json:"balance,omitempty"`
 }
 
-type SellProductRequest struct {
-	ProductName string
-	Quantity    int
-}
-
-type Cart []SellProductRequest
-
-// AddToCart adds bought products into client's cart
-func (c *Cart) AddToCart(r SellProductRequest) {
-	*c = append(*c, r)
+type UserCard struct {
+	FullName   string `json:"full_name,omitempty"`
+	Password   string `json:"password,omitempty"`
+	Email      string `json:"email,omitempty"`
+	CardNumber string `json:"card_number,omitempty"`
+	Balance    int    `json:"balance,omitempty"`
 }
 
 
-func NewCard(cn, bln int) *Card {
+func NewCard(cn string, bln int) *Card {
 	id := uuid.New()
 	return &Card{
 		ID: id.String(),
