@@ -115,9 +115,9 @@ func (r *PostgresRepository) GetUser(ctx context.Context, email, pw string) (use
 
 func (r *PostgresRepository) AddProduct(ctx context.Context, p product.Product) error {
 	_, err := r.db.ExecContext(ctx, `
-		INSERT INTO product (id, name, quantity, price, original_price)
-		VALUES ($1, $2, $3, $4, $5, $6)
-	`, p.ID, p.Name, p.Description, p.Quantity, p.Price, p.OriginalPrice)
+		INSERT INTO product (id, name, description, quantity,  price, original_price, img)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
+	`, p.ID, p.Name, p.Description, p.Quantity, p.Price, p.OriginalPrice, p.ImageLink)
 
 	if err != nil {
 		return fmt.Errorf("AddProduct: %w", err)
@@ -132,9 +132,9 @@ func (r *PostgresRepository) AddProducts(ctx context.Context, ps []product.Produ
 	}
 	for _, p := range ps {
 		_, err := tx.ExecContext(ctx, `
-		INSERT INTO product (id, name, description, quantity, price, original_price)
-		VALUES ($1, $2, $3, $4, $5, $6)
-		`, p.ID, p.Name, p.Description, p.Quantity, p.Price, p.OriginalPrice)
+		INSERT INTO product (id, name, description, quantity, price, original_price, img)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
+		`, p.ID, p.Name, p.Description, p.Quantity, p.Price, p.OriginalPrice, p.ImageLink)
 
 		if err != nil {
 			tx.Rollback()
@@ -149,7 +149,7 @@ func (r *PostgresRepository) GetProduct(ctx context.Context, name string) (produ
 	p := product.Product{}
 	err := r.db.QueryRow(`
 		SELECT * FROM product WHERE name=$1 
-	`, name).Scan(&p.ID, &p.Name, &p.Description, &p.Quantity, &p.Price, &p.OriginalPrice)
+	`, name).Scan(&p.ID, &p.Name, &p.Description, &p.Quantity, &p.Price, &p.OriginalPrice, &p.ImageLink)
 	if err != nil {
 		return p, fmt.Errorf("GetProduct: %w", err)
 	}

@@ -7,7 +7,7 @@ CREATE TABLE users (
     is_admin BOOLEAN DEFAULT FALSE
 );
 
--- UPDATE users SET is_admin=TRUE WHERE email='khasanovasumbula@gmail.com';
+UPDATE users SET is_admin=TRUE WHERE email='khasanovasumbula@gmail.com';
 
 CREATE TABLE card (
     id UUID PRIMARY KEY,
@@ -23,7 +23,8 @@ CREATE TABLE product (
     description TEXT,
     quantity INTEGER, 
     price INTEGER,
-    original_price INTEGER
+    original_price INTEGER,
+    img VARCHAR(255)
 );
 
 CREATE TABLE sales_history (
@@ -39,10 +40,10 @@ CREATE TABLE sales_history (
 -- DROP TABLE card;
 -- DROP TABLE users;
 
-SELECT * FROM users;
+-- SELECT * FROM users;
 -- SELECT * FROM card;
 -- SELECT * FROM sales_history;
--- SELECT * FROM product;
+SELECT * FROM product;
 
 -- SELECT 
 -- u.full_name, 

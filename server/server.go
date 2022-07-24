@@ -126,7 +126,7 @@ func (h *Handler) AddProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	product := product.New(p.Name, p.Description, p.Quantity, p.Price)
+	product := product.New(p.Name, p.Description, p.ImageLink, p.Quantity, p.Price)
 	err := h.repo.AddProduct(r.Context(), *product)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -151,7 +151,7 @@ func (h *Handler) AddProducts(w http.ResponseWriter, r *http.Request) {
 
 	products := []product.Product{}
 	for _, p := range tempProducts {
-		product := product.New(p.Name, p.Description, p.Quantity, p.Price)
+		product := product.New(p.Name, p.Description, p.ImageLink, p.Quantity, p.Price)
 		products = append(products, *product)
 	}
 
@@ -249,6 +249,7 @@ func (h *Handler) AddCard(w http.ResponseWriter, r *http.Request)  {
 		return
 	}	
 	w.WriteHeader(http.StatusCreated)
+	io.WriteString(w, "cardisadded")
 }
 
 func NewRouter(repo Repository) http.Handler {
