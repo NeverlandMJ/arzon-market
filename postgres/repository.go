@@ -7,6 +7,8 @@ import (
 	"store/product"
 	"store/store"
 	"store/user"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type PostgresRepository struct {
@@ -71,14 +73,17 @@ func (r *PostgresRepository) AddCard(ctx context.Context, c user.Card) error {
 }
 
 func (r *PostgresRepository) AddUser(ctx context.Context, u user.User) error {
-	
-	_, err := r.db.Exec(`
+	bp, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.MinCost)
+	if err != nil {
+		return err
+	}
+	_, err = r.db.Exec(`
 	INSERT INTO users 
 	(id, full_name, password, email)
 	VALUES ($1, $2, $3, $4)
 	`, u.ID,
 		u.FullName,
-		u.Password,
+		string(bp),
 		u.Email,
 	)
 
@@ -90,13 +95,19 @@ func (r *PostgresRepository) AddUser(ctx context.Context, u user.User) error {
 }
 
 func (r *PostgresRepository) GetUser(ctx context.Context, email, pw string) (user.User, error) {
+	
 	u := user.User{}
 	err := r.db.QueryRow(`
-		SELECT * FROM users WHERE email=$1 AND password=$2
-	`, email, pw).Scan(&u.ID, &u.FullName, &u.Password, &u.Email, &u.IsAdmin)
+		SELECT * FROM users WHERE email=$1
+	`, email).Scan(&u.ID, &u.FullName, &u.Password, &u.Email, &u.IsAdmin)
 
 	if err != nil {
-		return u, fmt.Errorf("GetUser: %w", err)
+		return user.User{}, fmt.Errorf("GetUser: %w", err)
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(pw))
+	if err != nil {
+		return user.User{}, err
 	}
 
 	return u, nil
