@@ -28,7 +28,7 @@ func (r *PostgresRepository) ListUsers(ctx context.Context) ([]user.UserCard, er
 		u.email,
 		c.card_number,
 		c.balance FROM users AS u 
-		JOIN card AS c ON u.card_id=c.id;
+		JOIN card AS c ON u.id=c.owner
 	`)
 	if err != nil {
 		return nil, fmt.Errorf("ListUsers: %w", err)
@@ -59,61 +59,41 @@ func (r *PostgresRepository) ListUsers(ctx context.Context) ([]user.UserCard, er
 func (r *PostgresRepository) AddCard(ctx context.Context, c user.Card) error {
 	_, err := r.db.Exec(`
 		INSERT INTO card 
-		(id, card_number, balance)
-		VALUES ($1, $2, $3)
-	`, c.ID, c.CardNumber, c.Balance,
+		(id, card_number, balance, owner)
+		VALUES ($1, $2, $3, $4)
+	`, c.ID, c.CardNumber, c.Balance, c.OwnerID,
 	)
 
 	if err != nil {
 		return fmt.Errorf("AddCard: %w", err)
 	}
-
 	return nil
 }
 
-func (r *PostgresRepository) AddUser(ctx context.Context, u user.User, c user.Card) error {
-	tx, err := r.db.BeginTx(ctx, nil)
-	if err != nil {
-		tx.Rollback()
-		return fmt.Errorf("AddCard: %w", err)
-	}
-	_, err = tx.Exec(`
-	INSERT INTO card 
-	(id, card_number, balance)
-	VALUES ($1, $2, $3)
-	`, c.ID, c.CardNumber, c.Balance,
-	)
-
-	if err != nil {
-		tx.Rollback()
-		return fmt.Errorf("AddCard: %w", err)
-	}
-
-	_, err = tx.Exec(`
+func (r *PostgresRepository) AddUser(ctx context.Context, u user.User) error {
+	
+	_, err := r.db.Exec(`
 	INSERT INTO users 
-	(id, full_name, password, email, card_id)
-	VALUES ($1, $2, $3, $4, $5)
-	`, u.CardID,
+	(id, full_name, password, email)
+	VALUES ($1, $2, $3, $4)
+	`, u.ID,
 		u.FullName,
 		u.Password,
 		u.Email,
-		u.CardID,
 	)
 
 	if err != nil {
-		tx.Rollback()
 		return fmt.Errorf("AddUser: %w", err)
 	}
 
-	tx.Commit()
 	return nil
 }
 
-func (r *PostgresRepository) GetUser(ctx context.Context, fn, email, pw string) (user.User, error) {
+func (r *PostgresRepository) GetUser(ctx context.Context, email, pw string) (user.User, error) {
 	u := user.User{}
 	err := r.db.QueryRow(`
-		SELECT * FROM users WHERE full_name=$1 AND email=$2 AND password=$3
-	`, fn, email, pw).Scan(&u.ID, &u.FullName, &u.Password, &u.Email, &u.CardID, &u.IsAdmin)
+		SELECT * FROM users WHERE email=$1 AND password=$2
+	`, email, pw).Scan(&u.ID, &u.FullName, &u.Password, &u.Email, &u.IsAdmin)
 
 	if err != nil {
 		return u, fmt.Errorf("GetUser: %w", err)
@@ -217,7 +197,6 @@ func (r *PostgresRepository) SellProduct(ctx context.Context, sale store.Sales, 
 		&customer.FullName,
 		&customer.Password,
 		&customer.Email,
-		&customer.CardID,
 		&customer.IsAdmin,
 	)
 	if err != nil {
@@ -226,8 +205,8 @@ func (r *PostgresRepository) SellProduct(ctx context.Context, sale store.Sales, 
 	}
 
 	_, err = tx.ExecContext(ctx, `
-		UPDATE card SET balance = balance - $1 WHERE id=$2
-	`, sale.Profit, customer.CardID)
+		UPDATE card SET balance = balance - $1 WHERE owner=$2
+	`, sale.Profit, customer.ID)
 
 	if err != nil {
 		tx.Rollback()
@@ -248,3 +227,4 @@ func (r *PostgresRepository) SellProduct(ctx context.Context, sale store.Sales, 
 	tx.Commit()
 	return nil
 }
+
