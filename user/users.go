@@ -7,14 +7,14 @@ type User struct {
 	FullName string `json:"full_name,omitempty"`
 	Password string `json:"password,omitempty"`
 	Email    string `json:"email,omitempty"`
-	CardID   string `json:"card_id,omitempty"`
-	IsAdmin  bool `json:"is_admin,omitempty"`
+	IsAdmin  bool   `json:"is_admin,omitempty"`
 }
 
 type Card struct {
 	ID         string `json:"id,omitempty"`
-	CardNumber string    `json:"card_number,omitempty"`
+	CardNumber string `json:"card_number,omitempty"`
 	Balance    int    `json:"balance,omitempty"`
+	OwnerID    string `json:"owner_id,omitempty"`
 }
 
 type UserCard struct {
@@ -25,25 +25,23 @@ type UserCard struct {
 	Balance    int    `json:"balance,omitempty"`
 }
 
-
-func NewCard(cn string, bln int) *Card {
+func NewCard(cn string, bln int, userID string) *Card {
 	id := uuid.New()
 	return &Card{
-		ID: id.String(),
+		ID:         id.String(),
 		CardNumber: cn,
-		Balance: bln,
+		Balance:    bln,
+		OwnerID: userID,
 	}
 }
 
-func NewUser(fn, pw, email string, NewCard Card) *User {
+func NewUser(fn, pw, email string) *User {
 	id := uuid.New()
 	return &User{
-		ID: id.String(),
+		ID:       id.String(),
 		FullName: fn,
 		Password: pw,
-		Email: email,
-		CardID: NewCard.ID,
-		IsAdmin: false,
+		Email:    email,
+		IsAdmin:  false,
 	}
 }
-

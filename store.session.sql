@@ -1,17 +1,21 @@
-CREATE TABLE card (
-    id UUID PRIMARY KEY,
-    card_number VARCHAR(80) UNIQUE,
-    balance BIGINT CHECK (balance > 0)
-);
 
 CREATE TABLE users (
     id UUID PRIMARY KEY,
     full_name VARCHAR(100) NOT NULL DEFAULT '',
-    password VARCHAR(10) NOT NULL,
+    password VARCHAR(255) NOT NULL,
     email VARCHAR(80) NOT NULL UNIQUE,
-    card_id uuid REFERENCES card (id),
     is_admin BOOLEAN DEFAULT FALSE
 );
+
+-- UPDATE users SET is_admin=TRUE WHERE email='khasanovasumbula@gmail.com';
+
+CREATE TABLE card (
+    id UUID PRIMARY KEY,
+    card_number VARCHAR(80) UNIQUE,
+    balance BIGINT CHECK (balance > 0),
+    owner UUID REFERENCES users (id)
+);
+
 
 CREATE TABLE product (
     id UUID PRIMARY KEY,
@@ -32,18 +36,21 @@ CREATE TABLE sales_history (
 
 -- DROP TABLE sales_history;
 -- DROP TABLE product;
--- DROP TABLE users;
 -- DROP TABLE card;
+-- DROP TABLE users;
 
 SELECT * FROM users;
-SELECT * FROM card;
-SELECT * FROM sales_history;
-SELECT * FROM product;
+-- SELECT * FROM card;
+-- SELECT * FROM sales_history;
+-- SELECT * FROM product;
 
-SELECT 
-u.full_name, 
-u.password, 
-u.email,
-c.card_number,
-c.balance FROM users AS u 
-JOIN card AS c ON u.card_id=c.id;
+-- SELECT 
+-- u.full_name, 
+-- u.password, 
+-- u.email,
+-- c.card_number,
+-- c.balance FROM users AS u 
+-- JOIN card AS c ON u.id=c.owner;
+
+
+

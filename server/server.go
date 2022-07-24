@@ -17,14 +17,14 @@ import (
 
 type Repository interface {
 	ListUsers(ctx context.Context) ([]user.UserCard, error)
-	AddUser(ctx context.Context, u user.User, c user.Card) error
-	AddCard(ctx context.Context, c user.Card) error
-	GetUser(ctx context.Context, fn, email, pw string) (user.User, error)
+	AddUser(ctx context.Context, u user.User) error
+	GetUser(ctx context.Context, email, pw string) (user.User, error)
 	AddProduct(ctx context.Context, p product.Product) error
 	GetProduct(ctx context.Context, name string) (product.Product, error)
 	ListProducts(ctx context.Context) ([]product.Product, error)
 	SellProduct(ctx context.Context, sale store.Sales, product product.Product) error
 	AddProducts(ctx context.Context, ps []product.Product) error
+	AddCard(ctx context.Context, c user.Card) error
 }
 
 type Handler struct {
@@ -33,6 +33,10 @@ type Handler struct {
 }
 
 func (h *Handler) ListUsers(w http.ResponseWriter, r *http.Request) {
+	if !h.user.IsAdmin{
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
 	w.Header().Set("Content-Type", "application/json")
 	users, err := h.repo.ListUsers(r.Context())
 	if err != nil {
@@ -49,13 +53,13 @@ func (h *Handler) ListUsers(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (h *Handler) AddUser(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) SignUp(w http.ResponseWriter, r *http.Request) {
 	tempUser := struct {
-		Name       string `json:"full_name,omitempty"`
-		Email      string `json:"email,omitempty"`
-		Password   string `json:"password,omitempty"`
-		CardNumber string `json:"card_number,omitempty"`
-		Balance    int    `json:"balance,omitempty"`
+		Name     string `json:"full_name,omitempty"`
+		Email    string `json:"email,omitempty"`
+		Password string `json:"password,omitempty"`
+		// CardNumber string `json:"card_number,omitempty"`
+		// Balance    int    `json:"balance,omitempty"`
 	}{}
 
 	if err := json.NewDecoder(r.Body).Decode(&tempUser); err != nil {
@@ -64,14 +68,13 @@ func (h *Handler) AddUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	card := user.NewCard(tempUser.CardNumber, tempUser.Balance)
+	// card := user.NewCard(tempUser.CardNumber, tempUser.Balance)
 	newUser := user.NewUser(
 		tempUser.Name,
 		tempUser.Password,
 		tempUser.Email,
-		*card,
 	)
-	err := h.repo.AddUser(r.Context(), *newUser, *card)
+	err := h.repo.AddUser(r.Context(), *newUser)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Println(err)
@@ -83,9 +86,8 @@ func (h *Handler) AddUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
-	
+
 	tempUser := struct {
-		Name     string `json:"full_name,omitempty"`
 		Email    string `json:"email,omitempty"`
 		Password string `json:"password,omitempty"`
 	}{}
@@ -97,10 +99,11 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	gotUser, err := h.repo.GetUser(r.Context(),
-		tempUser.Name, tempUser.Email, tempUser.Password)
+		tempUser.Email, tempUser.Password)
 
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(http.StatusNotFound)
+		io.WriteString(w, "userdoesntexist")
 		fmt.Println(err)
 		return
 	}
@@ -110,7 +113,11 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) AddProduct(w http.ResponseWriter, r *http.Request) {
-	
+	if !h.user.IsAdmin{
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
 	p := product.Product{}
 
 	if err := json.NewDecoder(r.Body).Decode(&p); err != nil {
@@ -131,10 +138,15 @@ func (h *Handler) AddProduct(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) AddProducts(w http.ResponseWriter, r *http.Request) {
+	if !h.user.IsAdmin{
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
 	tempProducts := []product.Product{}
 	if err := json.NewDecoder(r.Body).Decode(&tempProducts); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		panic(err)
+		fmt.Println(err)
+		return
 	}
 
 	products := []product.Product{}
@@ -187,7 +199,7 @@ func (h *Handler) BuyProduct(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) ListProducts(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	
+
 	products, err := h.repo.ListProducts(r.Context())
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -204,7 +216,7 @@ func (h *Handler) ListProducts(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) GetProduct(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	
+
 	productName := r.URL.Query().Get("name")
 	p, err := h.repo.GetProduct(r.Context(), productName)
 	if err != nil {
@@ -220,18 +232,38 @@ func (h *Handler) GetProduct(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+func (h *Handler) AddCard(w http.ResponseWriter, r *http.Request)  {
+	var c user.Card
+	if err := json.NewDecoder(r.Body).Decode(&c); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Println(err)
+		return
+	}
+
+	c.OwnerID = h.user.ID
+	newCard := user.NewCard(c.CardNumber, c.Balance, c.OwnerID)
+
+	err := h.repo.AddCard(r.Context(), *newCard)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}	
+	w.WriteHeader(http.StatusCreated)
+}
+
 func NewRouter(repo Repository) http.Handler {
 	r := chi.NewRouter()
 	h := Handler{repo: repo}
 	r.Use(middleware.Logger)
-	r.Post("/register", h.AddUser)
-	r.Post("/login", h.Login)
+	r.Post("/register", h.SignUp)//
+	r.Post("/login", h.Login)//
+	r.Post("/add/card", h.AddCard)//
 	r.Get("/users", h.ListUsers)
 	r.Get("/buy/", h.BuyProduct)
-	r.Get("/product/", h.GetProduct)
-	r.Post("/product/add", h.AddProduct)
-	r.Post("/product/add/list", h.AddProducts)
-	r.Get("/product/list", h.ListProducts)
+	r.Get("/product/", h.GetProduct)//
+	r.Post("/add/product", h.AddProduct)//
+	r.Post("/add/list/product", h.AddProducts)//
+	r.Get("/product/list", h.ListProducts)//
 
 	return r
 }
