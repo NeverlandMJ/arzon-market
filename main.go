@@ -1,9 +1,11 @@
 package main
 
 import (
+	"github.com/NeverlandMJ/arzon-market/postgres"
+	"github.com/NeverlandMJ/arzon-market/server"
+	"fmt"
 	"net/http"
-	"store/postgres"
-	"store/server"
+	"os"
 
 	_ "github.com/lib/pq"
 )
@@ -17,5 +19,16 @@ func main() {
 	repo := postgres.NewPostgresRepository(db)
 	r := server.NewRouter(repo)
 
-	http.ListenAndServe(":8080", r)
+	http.ListenAndServe(GetPort(), r)
+}
+
+// Get the Port from the environment so we can run on Heroku
+func GetPort() string {
+	var port = os.Getenv("PORT")
+	// Set a default port if there is nothing in the environment
+	if port == "" {
+		port = "8080"
+		fmt.Println("INFO: No PORT environment variable detected, defaulting to " + port)
+	}
+	return ":" + port
 }
