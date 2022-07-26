@@ -1,7 +1,0 @@
-{
-      "full_name": "Sunbula Hasanova",
-      "email": "khasanovasumbula@gmail.com",
-      "password": "lolo2307",
-      "card_number": 860012345678,
-      "balance": 100000000
-}

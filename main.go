@@ -1,8 +1,8 @@
 package main
 
 import (
-	"arzon-market/postgres"
-	"arzon-market/server"
+	"github.com/NeverlandMJ/arzon-market/postgres"
+	"github.com/NeverlandMJ/arzon-market/server"
 	"fmt"
 	"net/http"
 	"os"
