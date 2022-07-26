@@ -4,9 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"store/product"
-	"store/store"
-	"store/user"
+	"arzon-market/product"
+	"arzon-market/store"
+	"arzon-market/user"
 
 	"golang.org/x/crypto/bcrypt"
 )

@@ -1,4 +1,4 @@
-module store
+module arzon-market
 
 go 1.17
 

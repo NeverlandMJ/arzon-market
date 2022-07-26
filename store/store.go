@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
-	"store/product"
-	"store/user"
+	"arzon-market/product"
+	"arzon-market/user"
 	"time"
 )
 

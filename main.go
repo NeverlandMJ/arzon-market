@@ -2,8 +2,8 @@ package main
 
 import (
 	"net/http"
-	"store/postgres"
-	"store/server"
+	"arzon-market/postgres"
+	"arzon-market/server"
 
 	_ "github.com/lib/pq"
 )

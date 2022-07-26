@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"store/product"
-	"store/store"
-	"store/user"
+	"arzon-market/product"
+	"arzon-market/store"
+	"arzon-market/user"
 	"strconv"
 
 	"github.com/go-chi/chi"
