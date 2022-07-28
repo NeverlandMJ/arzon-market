@@ -2,18 +2,15 @@ package server
 
 import (
 	"context"
-	"encoding/json"
+	"database/sql"
 	"fmt"
-	"io"
 	"net/http"
+	"strconv"
+
 	"github.com/NeverlandMJ/arzon-market/product"
 	"github.com/NeverlandMJ/arzon-market/store"
 	"github.com/NeverlandMJ/arzon-market/user"
-	"strconv"
-
-	"github.com/go-chi/chi"
-	"github.com/go-chi/chi/middleware"
-	
+	"github.com/gin-gonic/gin"
 )
 
 type Repository interface {
@@ -33,138 +30,143 @@ type Handler struct {
 	user user.User
 }
 
-func NewRouter(repo Repository) http.Handler {
-	r := chi.NewRouter()
+// message represents request response with a message
+type message struct {
+	Message string `json:"message"`
+}
+
+func NewRouter(repo Repository) *gin.Engine {
+	router := gin.Default()
 	h := Handler{repo: repo}
-	r.Use(middleware.Logger)
 
-	r.Post("/register", h.SignUp)//
-	r.Post("/login", h.Login)//
-	r.Post("/add/card", h.AddCard)//
-	r.Get("/users", h.ListUsers)
-	r.Get("/buy/", h.BuyProduct)
-	r.Get("/product/", h.GetProduct)//
-	r.Post("/add/product", h.AddProduct)//
-	r.Post("/add/list/product", h.AddProducts)//
-	r.Get("/product/list", h.ListProducts)//
+	router.POST("/register", h.SignUp)  //
+	router.POST("/login", h.Login)      //
+	router.POST("/add/card", h.AddCard) //
+	router.GET("/users", h.ListUsers)
+	router.GET("/buy/", h.BuyProduct)
+	router.GET("/product/", h.GetProduct)           //
+	router.POST("/add/product", h.AddProduct)       //
+	router.POST("/add/list/product", h.AddProducts) //
+	router.GET("/product/list", h.ListProducts)     //
 
-	return r
+	return router
 }
 
-
-func (h *Handler) ListUsers(w http.ResponseWriter, r *http.Request) {
-	if !h.user.IsAdmin{
-		w.WriteHeader(http.StatusMethodNotAllowed)
+func (h *Handler) ListUsers(c *gin.Context) {
+	if !h.user.IsAdmin {
+		r := message{"method is only allowed to admins"}
+		c.JSON(http.StatusMethodNotAllowed, r)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	users, err := h.repo.ListUsers(r.Context())
+
+	users, err := h.repo.ListUsers(c.Request.Context())
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		r := message{"error while listing users"}
+		c.JSON(http.StatusInternalServerError, r)
 		fmt.Println(err)
 		return
 	}
-	if err := json.NewEncoder(w).Encode(users); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Println(err)
-		return
-	}
-	w.WriteHeader(http.StatusOK)
 
+	c.JSON(http.StatusOK, users)
 }
 
-func (h *Handler) SignUp(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) SignUp(c *gin.Context) {
 	tempUser := struct {
 		Name     string `json:"full_name,omitempty"`
 		Email    string `json:"email,omitempty"`
 		Password string `json:"password,omitempty"`
-		// CardNumber string `json:"card_number,omitempty"`
-		// Balance    int    `json:"balance,omitempty"`
 	}{}
 
-	if err := json.NewDecoder(r.Body).Decode(&tempUser); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Println(err)
+	if err := c.BindJSON(&tempUser); err != nil {
+		r := message{"invalid json"}
+		c.JSON(http.StatusBadRequest, r)
 		return
 	}
 
-	// card := user.NewCard(tempUser.CardNumber, tempUser.Balance)
 	newUser := user.NewUser(
 		tempUser.Name,
 		tempUser.Password,
 		tempUser.Email,
 	)
-	err := h.repo.AddUser(r.Context(), *newUser)
+	err := h.repo.AddUser(c.Request.Context(), *newUser)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		r := message{"error in adding user to database"}
+		c.JSON(http.StatusInternalServerError, r)
 		fmt.Println(err)
 		return
 	}
 	h.user = *newUser
-	w.WriteHeader(http.StatusCreated)
-	io.WriteString(w, "userregistreted")
+
+	r := message{"user registrated"}
+	c.JSON(http.StatusCreated, r)
 }
 
-func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
-
+func (h *Handler) Login(c *gin.Context) {
 	tempUser := struct {
 		Email    string `json:"email,omitempty"`
 		Password string `json:"password,omitempty"`
 	}{}
 
-	if err := json.NewDecoder(r.Body).Decode(&tempUser); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+	if err := c.BindJSON(&tempUser); err != nil {
+		r := message{"invalid json"}
+		c.JSON(http.StatusBadRequest, r)
 		fmt.Println(err)
 		return
 	}
 
-	gotUser, err := h.repo.GetUser(r.Context(),
-		tempUser.Email, tempUser.Password)
+	gotUser, err := h.repo.GetUser(c.Request.Context(), tempUser.Email, tempUser.Password)
 
 	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
-		io.WriteString(w, "userdoesntexist")
+		r := message{"user doesn't exist"}
+		c.JSON(http.StatusBadRequest, r)
 		fmt.Println(err)
 		return
 	}
 	h.user = gotUser
-	w.WriteHeader(http.StatusOK)
-	io.WriteString(w, "loggedin")
+
+	r := message{"logged in"}
+	c.JSON(http.StatusOK, r)
 }
 
-func (h *Handler) AddProduct(w http.ResponseWriter, r *http.Request) {
-	if !h.user.IsAdmin{
-		w.WriteHeader(http.StatusMethodNotAllowed)
+func (h *Handler) AddProduct(c *gin.Context) {
+	if !h.user.IsAdmin {
+		r := message{"method is only allowed to admins"}
+		c.JSON(http.StatusMethodNotAllowed, r)
 		return
 	}
-
 	p := product.Product{}
 
-	if err := json.NewDecoder(r.Body).Decode(&p); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+	if err := c.BindJSON(&p); err != nil {
+		r := message{"invalid json"}
+		c.JSON(http.StatusBadRequest, r)
 		fmt.Println(err)
 		return
 	}
 
 	product := product.New(p.Name, p.Description, p.ImageLink, p.Quantity, p.Price)
-	err := h.repo.AddProduct(r.Context(), *product)
+	err := h.repo.AddProduct(c.Request.Context(), *product)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		r := message{"error in creating a new food"}
+		c.JSON(http.StatusInternalServerError, r)
 		fmt.Println(err)
 		return
 	}
-	w.WriteHeader(http.StatusCreated)
-	io.WriteString(w, "productadded")
+
+	r := message{"product added"}
+	c.JSON(http.StatusOK, r)
 }
 
-func (h *Handler) AddProducts(w http.ResponseWriter, r *http.Request) {
-	if !h.user.IsAdmin{
-		w.WriteHeader(http.StatusMethodNotAllowed)
+func (h *Handler) AddProducts(c *gin.Context) {
+	if !h.user.IsAdmin {
+		r := message{"method is only allowed to admins"}
+		c.JSON(http.StatusMethodNotAllowed, r)
 		return
 	}
 	tempProducts := []product.Product{}
-	if err := json.NewDecoder(r.Body).Decode(&tempProducts); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+
+	if err := c.BindJSON(&tempProducts); err != nil {
+		r := message{"invalid json"}
+		c.JSON(http.StatusBadRequest, r)
 		fmt.Println(err)
 		return
 	}
@@ -175,24 +177,49 @@ func (h *Handler) AddProducts(w http.ResponseWriter, r *http.Request) {
 		products = append(products, *product)
 	}
 
-	h.repo.AddProducts(r.Context(), products)
-
-}
-
-func (h *Handler) BuyProduct(w http.ResponseWriter, r *http.Request) {
-
-	productName := r.URL.Query().Get("name")
-	quantity := r.URL.Query().Get("quantity")
-	q, err := strconv.Atoi(quantity)
+	err := h.repo.AddProducts(c.Request.Context(), products)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+		r := message{"error in adding new foods"}
+		c.JSON(http.StatusInternalServerError, r)
 		fmt.Println(err)
 		return
 	}
-	GotProduct, err := h.repo.GetProduct(r.Context(), productName)
+
+	r := message{"products added"}
+	c.JSON(http.StatusOK, r)
+}
+
+func (h *Handler) BuyProduct(c *gin.Context) {
+	productName, ok := c.GetQuery("name")
+	if !ok {
+		r := message{"empty query"}
+		c.JSON(http.StatusBadRequest, r)
+		return
+	}
+	quantity, ok := c.GetQuery("quantity")
+	if !ok {
+		r := message{"empty query"}
+		c.JSON(http.StatusBadRequest, r)
+		return
+	}
+	q, err := strconv.Atoi(quantity)
 	if err != nil {
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
+		r := message{"invalid query"}
+		c.JSON(http.StatusBadRequest, r)
+		fmt.Println(err)
+		return
+	}
+
+	GotProduct, err := h.repo.GetProduct(c.Request.Context(), productName)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			r := message{"no such product"}
+			c.JSON(http.StatusNotExtended, r)
+			fmt.Println(err)
+			return
+		} else {
+			r := message{"error fetching data"}
+			c.JSON(http.StatusInternalServerError, r)
 			fmt.Println(err)
 			return
 		}
@@ -200,76 +227,76 @@ func (h *Handler) BuyProduct(w http.ResponseWriter, r *http.Request) {
 
 	sales, soldProduct, err := store.Sell(GotProduct, q, h.user)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		io.WriteString(w, "quantity exceeded")
+		r := message{"quantity exceeded"}
+		c.JSON(http.StatusBadRequest, r)
 		fmt.Println(err)
 		return
 	}
 
-	err = h.repo.SellProduct(r.Context(), sales, soldProduct)
+	err = h.repo.SellProduct(c.Request.Context(), sales, soldProduct)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		r := message{"selling data error"}
+		c.JSON(http.StatusInternalServerError, r)
 		fmt.Println(err)
 		return
 	}
-	w.WriteHeader(http.StatusOK)
-	io.WriteString(w, "productissold")
+
+	r := message{"product sold"}
+	c.JSON(http.StatusOK, r)
+}
+
+func (h *Handler) ListProducts(c *gin.Context) {
+
+	products, err := h.repo.ListProducts(c.Request.Context())
+	if err != nil {
+		r := message{"internal error getteing list of products"}
+		c.JSON(http.StatusInternalServerError, r)
+		fmt.Println(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, products)
 
 }
 
-func (h *Handler) ListProducts(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
+func (h *Handler) GetProduct(c *gin.Context) {
+	productName, ok := c.GetQuery("name")
+	if !ok {
+		r := message{"invalid query"}
+		c.JSON(http.StatusBadRequest, r)
+	}
 
-	products, err := h.repo.ListProducts(r.Context())
+	p, err := h.repo.GetProduct(c.Request.Context(), productName)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		r := message{"error in fetching data"}
+		c.JSON(http.StatusInternalServerError, r)
 		fmt.Println(err)
 		return
 	}
-	if err := json.NewEncoder(w).Encode(products); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Println(err)
-		return
-	}
-	w.WriteHeader(http.StatusOK)
+
+	c.JSON(http.StatusOK, p)
 }
 
-func (h *Handler) GetProduct(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
+func (h *Handler) AddCard(c *gin.Context) {
+	var card user.Card
 
-	productName := r.URL.Query().Get("name")
-	p, err := h.repo.GetProduct(r.Context(), productName)
+	if err := c.BindJSON(&card); err != nil {
+		r := message{"invalid json"}
+		c.JSON(http.StatusBadRequest, r)
+		return
+	}
+
+	card.OwnerID = h.user.ID
+	newCard := user.NewCard(card.CardNumber, card.Balance, card.OwnerID)
+
+	err := h.repo.AddCard(c.Request.Context(), *newCard)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		r := message{"error in creating new card"}
+		c.JSON(http.StatusInternalServerError, r)
 		fmt.Println(err)
 		return
 	}
-	if err := json.NewEncoder(w).Encode(p); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Println(err)
-		return
-	}
-	w.WriteHeader(http.StatusOK)
+
+	r := message{"card is added"}
+	c.JSON(http.StatusCreated, r)
 }
-
-func (h *Handler) AddCard(w http.ResponseWriter, r *http.Request)  {
-	var c user.Card
-	if err := json.NewDecoder(r.Body).Decode(&c); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Println(err)
-		return
-	}
-
-	c.OwnerID = h.user.ID
-	newCard := user.NewCard(c.CardNumber, c.Balance, c.OwnerID)
-
-	err := h.repo.AddCard(r.Context(), *newCard)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}	
-	w.WriteHeader(http.StatusCreated)
-	io.WriteString(w, "cardisadded")
-}
-
-

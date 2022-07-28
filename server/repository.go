@@ -168,7 +168,7 @@ func (r *PostgresRepository) ListProducts(ctx context.Context) ([]product.Produc
 
 	for rows.Next() {
 		p := product.Product{}
-		err := rows.Scan(&p.ID, &p.Name, &p.Description, &p.Quantity, &p.Price, &p.OriginalPrice)
+		err := rows.Scan(&p.ID, &p.Name, &p.Description, &p.Quantity, &p.Price, &p.OriginalPrice, &p.ImageLink)
 
 		if err != nil {
 			return nil, fmt.Errorf("ListProduct: %w", err)

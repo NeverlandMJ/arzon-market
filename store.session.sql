@@ -40,9 +40,9 @@ CREATE TABLE sales_history (
 -- DROP TABLE card;
 -- DROP TABLE users;
 
--- SELECT * FROM users;
+SELECT * FROM users;
 -- SELECT * FROM card;
--- SELECT * FROM sales_history;
+SELECT * FROM sales_history;
 -- SELECT * FROM product;
 
 -- SELECT 
