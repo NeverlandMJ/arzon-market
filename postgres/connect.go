@@ -3,26 +3,27 @@ package postgres
 import (
 	"database/sql"
 	"fmt"
+
+	_ "github.com/jackc/pgx/v4/stdlib"
+
+	"github.com/NeverlandMJ/arzon-market/config"
 )
 
-const (
-	pgHost = "localhost"
-	pgPort = 5432
-	pgUser = "sunbula"
-	pgPass = "2307"
-	pdDB   = "test"
-)
+func Connect(cfg config.Config) (*sql.DB, error) {
+	//protocol: //login:password@host:port/yourDatabase'sName
+	// dbURL := "postgres://sunbula:2307@localhost:5432/test"
 
-func Connect() (*sql.DB, error) {
 	db, err := sql.Open(
-		"postgres",
-		fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-			pgHost, pgPort, pgUser, pgPass, pdDB,
+		"pgx",
+		fmt.Sprintf(
+			"postgres://%s:%s@%s:%s/%s",
+			cfg.PostgresUser, cfg.PostgresPassword, cfg.PostgresHost, cfg.PostgresPort, cfg.PostgresDB,
 		),
 	)
 	if err != nil {
 		return nil, err
 	}
+
 	if err = db.Ping(); err != nil {
 		return nil, err
 	}
