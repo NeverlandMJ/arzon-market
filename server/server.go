@@ -13,6 +13,7 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
+	
 )
 
 type Repository interface {
@@ -31,6 +32,25 @@ type Handler struct {
 	repo Repository
 	user user.User
 }
+
+func NewRouter(repo Repository) http.Handler {
+	r := chi.NewRouter()
+	h := Handler{repo: repo}
+	r.Use(middleware.Logger)
+
+	r.Post("/register", h.SignUp)//
+	r.Post("/login", h.Login)//
+	r.Post("/add/card", h.AddCard)//
+	r.Get("/users", h.ListUsers)
+	r.Get("/buy/", h.BuyProduct)
+	r.Get("/product/", h.GetProduct)//
+	r.Post("/add/product", h.AddProduct)//
+	r.Post("/add/list/product", h.AddProducts)//
+	r.Get("/product/list", h.ListProducts)//
+
+	return r
+}
+
 
 func (h *Handler) ListUsers(w http.ResponseWriter, r *http.Request) {
 	if !h.user.IsAdmin{
@@ -252,19 +272,4 @@ func (h *Handler) AddCard(w http.ResponseWriter, r *http.Request)  {
 	io.WriteString(w, "cardisadded")
 }
 
-func NewRouter(repo Repository) http.Handler {
-	r := chi.NewRouter()
-	h := Handler{repo: repo}
-	r.Use(middleware.Logger)
-	r.Post("/register", h.SignUp)//
-	r.Post("/login", h.Login)//
-	r.Post("/add/card", h.AddCard)//
-	r.Get("/users", h.ListUsers)
-	r.Get("/buy/", h.BuyProduct)
-	r.Get("/product/", h.GetProduct)//
-	r.Post("/add/product", h.AddProduct)//
-	r.Post("/add/list/product", h.AddProducts)//
-	r.Get("/product/list", h.ListProducts)//
 
-	return r
-}

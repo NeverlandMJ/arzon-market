@@ -43,7 +43,7 @@ CREATE TABLE sales_history (
 -- SELECT * FROM users;
 -- SELECT * FROM card;
 -- SELECT * FROM sales_history;
-SELECT * FROM product;
+-- SELECT * FROM product;
 
 -- SELECT 
 -- u.full_name, 
