@@ -1,0 +1,326 @@
+definitions:
+  product.Product:
+    properties:
+      description:
+        type: string
+      id:
+        type: string
+      image_link:
+        type: string
+      name:
+        type: string
+      original_price:
+        type: integer
+      price:
+        type: integer
+      quantity:
+        type: integer
+    type: object
+  server.message:
+    properties:
+      message:
+        type: string
+    type: object
+  user.Card:
+    properties:
+      balance:
+        type: integer
+      card_number:
+        type: string
+      id:
+        type: string
+      owner_id:
+        type: string
+    type: object
+  user.PreLoginUser:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  user.PreSignUpUser:
+    properties:
+      email:
+        type: string
+      full_name:
+        type: string
+      password:
+        type: string
+    type: object
+  user.UserCard:
+    properties:
+      balance:
+        type: integer
+      card_number:
+        type: string
+      email:
+        type: string
+      full_name:
+        type: string
+      password:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /add/card:
+    get:
+      consumes:
+      - application/json
+      description: user o'zining plastik kartasini kiritishi
+      parameters:
+      - description: Card info
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/user.Card'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.message'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.message'
+      summary: plastik karta qo'shish
+      tags:
+      - user
+  /add/list/product:
+    post:
+      consumes:
+      - application/json
+      description: bir nechta produktalarni qo'shish
+      parameters:
+      - description: Product info
+        in: body
+        name: request
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/product.Product'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.message'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.message'
+      summary: produktalar qo'shish
+      tags:
+      - admin
+  /add/product:
+    post:
+      consumes:
+      - application/json
+      description: bitta produkta qo'shish
+      parameters:
+      - description: Product info
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/product.Product'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.message'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.message'
+      summary: produkta qo'shish
+      tags:
+      - admin
+  /buy/:
+    get:
+      description: produkta sotib olish
+      parameters:
+      - description: Buy product
+        in: query
+        name: quantity
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.message'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.message'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/server.message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.message'
+      summary: buy product
+      tags:
+      - user
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: user login qilishi
+      parameters:
+      - description: User info
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/user.PreLoginUser'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.PreLoginUser'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.message'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/server.message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.message'
+      summary: sign in
+      tags:
+      - users
+  /product/{id}:
+    get:
+      description: bitta produkta haqida ma'lumotlarni olish
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/product.Product'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.message'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/server.message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.message'
+      summary: produkta
+      tags:
+      - user
+  /product/list:
+    get:
+      description: barcha produktalarni ko'rsatish
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/product.Product'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.message'
+      summary: hamma produktalarni listi
+      tags:
+      - user
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: user registratsiyadan o'tishi
+      parameters:
+      - description: User info
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/user.PreSignUpUser'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.PreSignUpUser'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.message'
+      summary: sign up
+      tags:
+      - users
+  /users:
+    get:
+      description: hamma userlar ro'yxatini chiqarish
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/user.UserCard'
+            type: array
+        "405":
+          description: Method Not Allowed
+          schema:
+            $ref: '#/definitions/server.message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.message'
+      summary: hamma userlar ro'yxati
+      tags:
+      - admin
+swagger: "2.0"

@@ -145,11 +145,11 @@ func (r *PostgresRepository) AddProducts(ctx context.Context, ps []product.Produ
 	return nil
 }
 
-func (r *PostgresRepository) GetProduct(ctx context.Context, name string) (product.Product, error) {
+func (r *PostgresRepository) GetProduct(ctx context.Context, id string) (product.Product, error) {
 	p := product.Product{}
 	err := r.db.QueryRow(`
-		SELECT * FROM product WHERE name=$1 
-	`, name).Scan(&p.ID, &p.Name, &p.Description, &p.Quantity, &p.Price, &p.OriginalPrice, &p.ImageLink)
+		SELECT * FROM product WHERE id=$1 
+	`, id).Scan(&p.ID, &p.Name, &p.Description, &p.Quantity, &p.Price, &p.OriginalPrice, &p.ImageLink)
 	if err != nil {
 		return p, fmt.Errorf("GetProduct: %w", err)
 	}
