@@ -10,6 +10,17 @@ type User struct {
 	IsAdmin  bool   `json:"is_admin,omitempty"`
 }
 
+type PreSignUpUser struct {
+	Name     string `json:"full_name,omitempty"`
+	Email    string `json:"email,omitempty"`
+	Password string `json:"password,omitempty"`
+}
+
+type PreLoginUser struct {
+	Email    string `json:"email,omitempty"`
+	Password string `json:"password,omitempty"`
+}
+
 type Card struct {
 	ID         string `json:"id,omitempty"`
 	CardNumber string `json:"card_number,omitempty"`
@@ -31,7 +42,7 @@ func NewCard(cn string, bln int, userID string) *Card {
 		ID:         id.String(),
 		CardNumber: cn,
 		Balance:    bln,
-		OwnerID: userID,
+		OwnerID:    userID,
 	}
 }
 
