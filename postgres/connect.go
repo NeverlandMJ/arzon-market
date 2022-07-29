@@ -2,11 +2,16 @@ package postgres
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 
 	_ "github.com/jackc/pgx/v4/stdlib"
 
 	"github.com/NeverlandMJ/arzon-market/config"
+
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
 func Connect(cfg config.Config) (*sql.DB, error) {
@@ -26,6 +31,23 @@ func Connect(cfg config.Config) (*sql.DB, error) {
 
 	if err = db.Ping(); err != nil {
 		return nil, err
+	}
+
+	driver, err := postgres.WithInstance(db, &postgres.Config{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to migrate1: %v", err)
+	}
+    m, err := migrate.NewWithDatabaseInstance(
+        "file://postgres/migrations",
+        "postgres", 
+		driver,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to migrate2: %v", err)
+	}
+
+	if err = m.Up(); err != nil && errors.Is(err, migrate.ErrNoChange) {
+		return nil, fmt.Errorf("failed to migrate3: %v", err)
 	}
 
 	return db, nil
