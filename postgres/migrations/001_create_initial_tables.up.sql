@@ -1,4 +1,3 @@
-
 CREATE TABLE users (
     id UUID PRIMARY KEY,
     full_name VARCHAR(100) NOT NULL DEFAULT '',
@@ -6,8 +5,6 @@ CREATE TABLE users (
     email VARCHAR(80) NOT NULL UNIQUE,
     is_admin BOOLEAN DEFAULT FALSE
 );
-
-UPDATE users SET is_admin=TRUE WHERE email='khasanovasumbula@gmail.com';
 
 CREATE TABLE card (
     id UUID PRIMARY KEY,
@@ -34,24 +31,4 @@ CREATE TABLE sales_history (
     profit INTEGER,
     time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
--- DROP TABLE sales_history;
--- DROP TABLE product;
--- DROP TABLE card;
--- DROP TABLE users;
-
--- SELECT * FROM users;
--- SELECT * FROM card;
--- SELECT * FROM sales_history;
--- SELECT * FROM product;
-
--- SELECT 
--- u.full_name, 
--- u.password, 
--- u.email,
--- c.card_number,
--- c.balance FROM users AS u 
--- JOIN card AS c ON u.id=c.owner;
-
-
 

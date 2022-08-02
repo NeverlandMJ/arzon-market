@@ -1,21 +1,24 @@
 package main
 
 import (
-	"net/http"
-	"store/postgres"
-	"store/server"
-
-	_ "github.com/lib/pq"
+	"github.com/NeverlandMJ/arzon-market/config"
+	"github.com/NeverlandMJ/arzon-market/postgres"
+	"github.com/NeverlandMJ/arzon-market/server"
 )
 
 func main() {
-	db, err := postgres.Connect()
+	cfg, err := config.Load()
 	if err != nil {
 		panic(err)
 	}
 
-	repo := postgres.NewPostgresRepository(db)
+	db, err := postgres.Connect(cfg)
+	if err != nil {
+		panic(err)
+	}
+
+	repo := server.NewPostgresRepository(db)
 	r := server.NewRouter(repo)
 
-	http.ListenAndServe(":8080", r)
+	r.Run()
 }
