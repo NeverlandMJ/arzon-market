@@ -4,15 +4,16 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/gin-contrib/cors"
 	"net/http"
 	"strconv"
 
+	_ "github.com/NeverlandMJ/arzon-market/docs"
 	"github.com/NeverlandMJ/arzon-market/product"
 	"github.com/NeverlandMJ/arzon-market/store"
 	"github.com/NeverlandMJ/arzon-market/user"
 	"github.com/gin-gonic/gin"
 
-	_ "github.com/NeverlandMJ/arzon-market/docs"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
@@ -53,6 +54,9 @@ type message struct {
 func NewRouter(repo Repository) *gin.Engine {
 	router := gin.Default()
 	h := Handler{repo: repo}
+	config := cors.DefaultConfig()
+	config.AllowOrigins = []string{"*"}
+	router.Use(cors.New(config))
 
 	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
@@ -68,6 +72,10 @@ func NewRouter(repo Repository) *gin.Engine {
 	router.POST("/add/list/product", h.AddProducts)
 
 	return router
+}
+
+func enableCors(w *http.ResponseWriter) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
 }
 
 // @Summary      hamma userlar ro'yxati
