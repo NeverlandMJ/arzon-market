@@ -46,7 +46,7 @@ func Connect(cfg config.Config) (*sql.DB, error) {
 		return nil, fmt.Errorf("failed to migrate2: %v", err)
 	}
 
-	if err = m.Up(); err != nil && errors.Is(err, migrate.ErrNoChange) {
+	if err = m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
 		return nil, fmt.Errorf("failed to migrate3: %v", err)
 	}
 
