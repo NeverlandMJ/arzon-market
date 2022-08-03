@@ -12,10 +12,9 @@ import (
 	"github.com/NeverlandMJ/arzon-market/user"
 	"github.com/gin-gonic/gin"
 
-	swaggerFiles "github.com/swaggo/files"
-    ginSwagger "github.com/swaggo/gin-swagger"
 	_ "github.com/NeverlandMJ/arzon-market/docs"
-
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 type Repository interface {
@@ -57,20 +56,19 @@ func NewRouter(repo Repository) *gin.Engine {
 
 	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	router.POST("/register", h.SignUp)  
-	router.POST("/login", h.Login)      
-	router.POST("/add/card", h.AddCard) 
+	router.POST("/register", h.SignUp)
+	router.POST("/login", h.Login)
+	router.POST("/add/card", h.AddCard)
 	router.GET("/buy/", h.BuyProduct)
-	router.GET("/product/:id", h.GetProduct)           
-	router.GET("/product/list", h.ListProducts)     
-	
+	router.GET("/product/:id", h.GetProduct)
+	router.GET("/product/list", h.ListProducts)
+
 	router.GET("/users", h.ListUsers)
-	router.POST("/add/product", h.AddProduct)       
-	router.POST("/add/list/product", h.AddProducts) 
+	router.POST("/add/product", h.AddProduct)
+	router.POST("/add/list/product", h.AddProducts)
 
 	return router
 }
-
 
 // @Summary      hamma userlar ro'yxati
 // @Description  hamma userlar ro'yxatini chiqarish
@@ -97,7 +95,6 @@ func (h *Handler) ListUsers(c *gin.Context) {
 
 	c.JSON(http.StatusOK, users)
 }
-
 
 // @Summary      sign up
 // @Description  user registratsiyadan o'tishi
@@ -136,7 +133,6 @@ func (h *Handler) SignUp(c *gin.Context) {
 	c.JSON(http.StatusCreated, *newUser)
 }
 
-
 // @Summary      sign in
 // @Description  user login qilishi
 // @Tags         users
@@ -166,20 +162,19 @@ func (h *Handler) Login(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, r)
 			fmt.Println(err)
 			return
-		}else {
+		} else {
 			r := message{err.Error()}
 			c.JSON(http.StatusInternalServerError, r)
 			fmt.Println(err)
 			return
 		}
-		
+
 	}
 	h.user = gotUser
 
 	// r := message{"logged in"}
 	c.JSON(http.StatusOK, gotUser)
 }
-
 
 // @Summary      plastik karta qo'shish
 // @Description  user o'zining plastik kartasini kiritishi
@@ -190,7 +185,7 @@ func (h *Handler) Login(c *gin.Context) {
 // @Success      200  {object}  message
 // @Failure      400  {object}  message
 // @Failure      500  {object}  message
-// @Router       /add/card [get]
+// @Router       /add/card [post]
 func (h *Handler) AddCard(c *gin.Context) {
 	var card user.Card
 
@@ -296,7 +291,6 @@ func (h *Handler) AddProducts(c *gin.Context) {
 	c.JSON(http.StatusOK, r)
 }
 
-
 // @Summary      buy product
 // @Description  produkta sotib olish
 // @Tags         user
@@ -363,7 +357,6 @@ func (h *Handler) BuyProduct(c *gin.Context) {
 	c.JSON(http.StatusOK, r)
 }
 
-
 // @Summary      hamma produktalarni listi
 // @Description  barcha produktalarni ko'rsatish
 // @Tags         user
@@ -385,7 +378,7 @@ func (h *Handler) ListProducts(c *gin.Context) {
 
 }
 
-// @Summary      produkta 
+// @Summary      produkta
 // @Description  bitta produkta haqida ma'lumotlarni olish
 // @Tags         user
 // @Produce      json
@@ -409,7 +402,7 @@ func (h *Handler) GetProduct(c *gin.Context) {
 			c.JSON(http.StatusNotExtended, r)
 			fmt.Println(err)
 			return
-		}else {
+		} else {
 			r := message{"error in fetching data"}
 			c.JSON(http.StatusInternalServerError, r)
 			fmt.Println(err)
@@ -419,6 +412,3 @@ func (h *Handler) GetProduct(c *gin.Context) {
 
 	c.JSON(http.StatusOK, p)
 }
-
-
-

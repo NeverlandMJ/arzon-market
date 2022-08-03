@@ -65,7 +65,7 @@ info:
   contact: {}
 paths:
   /add/card:
-    get:
+    post:
       consumes:
       - application/json
       description: user o'zining plastik kartasini kiritishi

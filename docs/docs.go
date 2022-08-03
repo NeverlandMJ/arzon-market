@@ -17,7 +17,7 @@ const docTemplate = `{
     "basePath": "{{.BasePath}}",
     "paths": {
         "/add/card": {
-            "get": {
+            "post": {
                 "description": "user o'zining plastik kartasini kiritishi",
                 "consumes": [
                     "application/json"
