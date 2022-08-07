@@ -29,8 +29,8 @@ type Handler interface {
 	SellProduct(ctx context.Context, productName string, quantity int, uID string) error
 	AllProducts(ctx context.Context) ([]product.Product, error)
 	GetOneProductInfo(ctx context.Context, name string) (product.Product, error)
-	ProductAdd(ctx context.Context, p product.Product) error
-	ProductsAdd(ctx context.Context, ps []product.Product) error
+	ProductAdd(ctx context.Context, p product.PreAddProduct) error
+	ProductsAdd(ctx context.Context, ps []product.PreAddProduct) error
 	UsersList(ctx context.Context) ([]user.UserCard, error)
 }
 
@@ -174,7 +174,7 @@ func (s *Service) GetOneProductInfo(ctx context.Context, id string) (product.Pro
 	return p, nil
 }
 
-func (s *Service) ProductAdd(ctx context.Context, p product.Product) error {
+func (s *Service) ProductAdd(ctx context.Context, p product.PreAddProduct) error {
 	product := product.New(p.Name, p.Description, p.ImageLink, p.Category, p.Quantity, p.Price)
 	err := s.repo.AddProduct(ctx, *product)
 	if err != nil {
@@ -184,7 +184,7 @@ func (s *Service) ProductAdd(ctx context.Context, p product.Product) error {
 	return nil
 }
 
-func (s *Service) ProductsAdd(ctx context.Context, ps []product.Product) error {
+func (s *Service) ProductsAdd(ctx context.Context, ps []product.PreAddProduct) error {
 	products := []product.Product{}
 	for _, p := range ps {
 		product := product.New(p.Name, p.Description, p.ImageLink, p.Category, p.Quantity, p.Price)

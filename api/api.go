@@ -37,7 +37,7 @@ type message struct {
 // @contact.url https://t.me/Neverland_MJ
 // @contact.email khasanovasumbula@gmail.com
 
-// @host localhost:8080
+// @host localhost:8081
 // @BasePath /api
 // @query.collection.format multi
 func NewRouter(serv service.Handler) *gin.Engine {
@@ -81,7 +81,7 @@ func NewRouter(serv service.Handler) *gin.Engine {
 // @Failure      400  {object}  message
 // @Failure		 422 {object} message
 // @Failure      500  {object}  message
-// @Router       /register [POST]
+// @Router       /auth/register [POST]
 func (a *api) SignUp(c *gin.Context) {
 	tempUser := user.PreSignUpUser{}
 
@@ -122,7 +122,7 @@ func (a *api) SignUp(c *gin.Context) {
 // @Failure      400  {object} 	message
 // @Failure      401  {object}  message
 // @Failure      500  {object} 	message
-// @Router       /login [POST]
+// @Router       /auth/login [POST]
 func (a *api) Login(c *gin.Context) {
 	tempUser := user.PreLoginUser{}
 
@@ -334,11 +334,11 @@ func (a *api) GetProduct(c *gin.Context) {
 // @Tags         admin
 // @Accept       json
 // @Produce      json
-// @Param        request body product.Product true "Product info"
+// @Param        request body product.PreAddProduct true "Product info"
 // @Success      200  {object}  message
 // @Failure      400  {object}  message
 // @Failure      500  {object}  message
-// @Router       /add/product [POST]
+// @Router       /admin/add/product [POST]
 func (a *api) AddProduct(c *gin.Context) {
 	_, ok := c.Get("claims")
 	if !ok {
@@ -348,7 +348,7 @@ func (a *api) AddProduct(c *gin.Context) {
 
 	}
 
-	p := product.Product{}
+	p := product.PreAddProduct{}
 
 	if err := c.BindJSON(&p); err != nil {
 		r := message{"invalid json"}
@@ -378,7 +378,7 @@ func (a *api) AddProduct(c *gin.Context) {
 // @Success      200  {object}  message
 // @Failure      400  {object}  message
 // @Failure      500  {object}  message
-// @Router       /add/list/product [POST]
+// @Router       /admin/add/list/product [POST]
 func (a *api) AddProducts(c *gin.Context) {
 	_, ok := c.Get("claims")
 	if !ok {
@@ -387,7 +387,7 @@ func (a *api) AddProducts(c *gin.Context) {
 		return
 
 	}
-	tempProducts := []product.Product{}
+	tempProducts := []product.PreAddProduct{}
 
 	if err := c.BindJSON(&tempProducts); err != nil {
 		r := message{"invalid json"}
@@ -414,7 +414,7 @@ func (a *api) AddProducts(c *gin.Context) {
 // @Success      200  {object}  []user.UserCard
 // @Failure      405  {object}  message
 // @Failure      500  {object}  message
-// @Router       /users [GET]
+// @Router       /admin/users [GET]
 func (a *api) ListUsers(c *gin.Context) {
 	_, ok := c.Get("claims")
 	if !ok {
