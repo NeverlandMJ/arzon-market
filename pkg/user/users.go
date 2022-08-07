@@ -6,18 +6,18 @@ type User struct {
 	ID       string `json:"id,omitempty"`
 	FullName string `json:"full_name,omitempty"`
 	Password string `json:"password,omitempty"`
-	Email    string `json:"email,omitempty"`
+	PhoneNumber    string `json:"phone_number,omitempty"`
 	IsAdmin  bool   `json:"is_admin,omitempty"`
 }
 
 type PreSignUpUser struct {
 	Name     string `json:"full_name,omitempty"`
-	Email    string `json:"email,omitempty"`
+	PhoneNumber    string `json:"phone_number,omitempty"`
 	Password string `json:"password,omitempty"`
 }
 
 type PreLoginUser struct {
-	Email    string `json:"email,omitempty"`
+	PhoneNumber    string `json:"phone_number,omitempty"`
 	Password string `json:"password,omitempty"`
 }
 
@@ -31,7 +31,7 @@ type Card struct {
 type UserCard struct {
 	FullName   string `json:"full_name,omitempty"`
 	Password   string `json:"password,omitempty"`
-	Email      string `json:"email,omitempty"`
+	PhoneNumber      string `json:"email,omitempty"`
 	CardNumber string `json:"card_number,omitempty"`
 	Balance    int    `json:"balance,omitempty"`
 }
@@ -46,13 +46,13 @@ func NewCard(cn string, bln int, userID string) *Card {
 	}
 }
 
-func NewUser(fn, pw, email string) *User {
+func NewUser(fn, pw, phone string) *User {
 	id := uuid.New()
 	return &User{
 		ID:       id.String(),
 		FullName: fn,
 		Password: pw,
-		Email:    email,
+		PhoneNumber:    phone,
 		IsAdmin:  false,
 	}
 }

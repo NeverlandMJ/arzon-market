@@ -1,12 +1,13 @@
-package server
+package storage
 
 import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/NeverlandMJ/arzon-market/product"
-	"github.com/NeverlandMJ/arzon-market/store"
-	"github.com/NeverlandMJ/arzon-market/user"
+
+	"github.com/NeverlandMJ/arzon-market/pkg/product"
+	"github.com/NeverlandMJ/arzon-market/pkg/store"
+	"github.com/NeverlandMJ/arzon-market/pkg/user"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -27,7 +28,7 @@ func (r *PostgresRepository) ListUsers(ctx context.Context) ([]user.UserCard, er
 		SELECT 
 		u.full_name, 
 		u.password, 
-		u.email,
+		u.phone_number,
 		c.card_number,
 		c.balance FROM users AS u 
 		JOIN card AS c ON u.id=c.owner
@@ -35,13 +36,13 @@ func (r *PostgresRepository) ListUsers(ctx context.Context) ([]user.UserCard, er
 	if err != nil {
 		return nil, fmt.Errorf("ListUsers: %w", err)
 	}
-	
-	for rows.Next(){
+
+	for rows.Next() {
 		uc := user.UserCard{}
 		err := rows.Scan(
 			&uc.FullName,
 			&uc.Password,
-			&uc.Email,
+			&uc.PhoneNumber,
 			&uc.CardNumber,
 			&uc.Balance,
 		)
@@ -79,12 +80,12 @@ func (r *PostgresRepository) AddUser(ctx context.Context, u user.User) error {
 	}
 	_, err = r.db.Exec(`
 	INSERT INTO users 
-	(id, full_name, password, email)
+	(id, full_name, password, phone_number)
 	VALUES ($1, $2, $3, $4)
 	`, u.ID,
 		u.FullName,
 		string(bp),
-		u.Email,
+		u.PhoneNumber,
 	)
 
 	if err != nil {
@@ -94,12 +95,12 @@ func (r *PostgresRepository) AddUser(ctx context.Context, u user.User) error {
 	return nil
 }
 
-func (r *PostgresRepository) GetUser(ctx context.Context, email, pw string) (user.User, error) {
-	
+func (r *PostgresRepository) GetUser(ctx context.Context, phone, pw string) (user.User, error) {
+
 	u := user.User{}
 	err := r.db.QueryRow(`
-		SELECT * FROM users WHERE email=$1
-	`, email).Scan(&u.ID, &u.FullName, &u.Password, &u.Email, &u.IsAdmin)
+		SELECT * FROM users WHERE phone_number=$1
+	`, phone).Scan(&u.ID, &u.FullName, &u.Password, &u.PhoneNumber, &u.IsAdmin)
 
 	if err != nil {
 		return user.User{}, fmt.Errorf("GetUser: %w", err)
@@ -110,18 +111,36 @@ func (r *PostgresRepository) GetUser(ctx context.Context, email, pw string) (use
 		return user.User{}, err
 	}
 
+	if err != nil {
+		return user.User{}, err
+	}
+
+	return u, nil
+}
+
+func (r *PostgresRepository) GetUserByID(id string) (user.User, error) {
+	u := user.User{}
+	err := r.db.QueryRow(`
+		SELECT * FROM users WHERE id=$1
+	`, id).Scan(&u.ID, &u.FullName, &u.Password, &u.PhoneNumber, &u.IsAdmin)
+
+	if err != nil {
+		return user.User{}, fmt.Errorf("GetUser: %w", err)
+	}
+	u.Password = ""
+
 	return u, nil
 }
 
 func (r *PostgresRepository) AddProduct(ctx context.Context, p product.Product) error {
 	_, err := r.db.ExecContext(ctx, `
-		INSERT INTO product (id, name, description, quantity,  price, original_price, img)
+		INSERT INTO product (id, name, description, quantity,  price, original_price, img, category)
 		VALUES ($1, $2, $3, $4, $5, $6, $7)
-	`, p.ID, p.Name, p.Description, p.Quantity, p.Price, p.OriginalPrice, p.ImageLink)
+	`, p.ID, p.Name, p.Description, p.Quantity, p.Price, p.OriginalPrice, p.ImageLink, p.Category)
 
 	if err != nil {
 		return fmt.Errorf("AddProduct: %w", err)
-	} 
+	}
 	return nil
 }
 
@@ -132,9 +151,9 @@ func (r *PostgresRepository) AddProducts(ctx context.Context, ps []product.Produ
 	}
 	for _, p := range ps {
 		_, err := tx.ExecContext(ctx, `
-		INSERT INTO product (id, name, description, quantity, price, original_price, img)
+		INSERT INTO product (id, name, description, quantity, price, original_price, img, category)
 		VALUES ($1, $2, $3, $4, $5, $6, $7)
-		`, p.ID, p.Name, p.Description, p.Quantity, p.Price, p.OriginalPrice, p.ImageLink)
+		`, p.ID, p.Name, p.Description, p.Quantity, p.Price, p.OriginalPrice, p.ImageLink, p.Category)
 
 		if err != nil {
 			tx.Rollback()
@@ -149,7 +168,7 @@ func (r *PostgresRepository) GetProduct(ctx context.Context, id string) (product
 	p := product.Product{}
 	err := r.db.QueryRow(`
 		SELECT * FROM product WHERE id=$1 
-	`, id).Scan(&p.ID, &p.Name, &p.Description, &p.Quantity, &p.Price, &p.OriginalPrice, &p.ImageLink)
+	`, id).Scan(&p.ID, &p.Name, &p.Description, &p.Quantity, &p.Price, &p.OriginalPrice, &p.ImageLink, &p.Category)
 	if err != nil {
 		return p, fmt.Errorf("GetProduct: %w", err)
 	}
@@ -168,7 +187,7 @@ func (r *PostgresRepository) ListProducts(ctx context.Context) ([]product.Produc
 
 	for rows.Next() {
 		p := product.Product{}
-		err := rows.Scan(&p.ID, &p.Name, &p.Description, &p.Quantity, &p.Price, &p.OriginalPrice, &p.ImageLink)
+		err := rows.Scan(&p.ID, &p.Name, &p.Description, &p.Quantity, &p.Price, &p.OriginalPrice, &p.ImageLink, &p.Category)
 
 		if err != nil {
 			return nil, fmt.Errorf("ListProduct: %w", err)
@@ -207,7 +226,7 @@ func (r *PostgresRepository) SellProduct(ctx context.Context, sale store.Sales, 
 		&customer.ID,
 		&customer.FullName,
 		&customer.Password,
-		&customer.Email,
+		&customer.PhoneNumber,
 		&customer.IsAdmin,
 	)
 	if err != nil {
@@ -238,4 +257,3 @@ func (r *PostgresRepository) SellProduct(ctx context.Context, sale store.Sales, 
 	tx.Commit()
 	return nil
 }
-

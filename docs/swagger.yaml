@@ -1,6 +1,14 @@
+basePath: /api
 definitions:
+  api.message:
+    properties:
+      message:
+        type: string
+    type: object
   product.Product:
     properties:
+      category:
+        type: string
       description:
         type: string
       id:
@@ -16,11 +24,6 @@ definitions:
       quantity:
         type: integer
     type: object
-  server.message:
-    properties:
-      message:
-        type: string
-    type: object
   user.Card:
     properties:
       balance:
@@ -34,18 +37,31 @@ definitions:
     type: object
   user.PreLoginUser:
     properties:
-      email:
-        type: string
       password:
+        type: string
+      phone_number:
         type: string
     type: object
   user.PreSignUpUser:
     properties:
-      email:
-        type: string
       full_name:
         type: string
       password:
+        type: string
+      phone_number:
+        type: string
+    type: object
+  user.User:
+    properties:
+      full_name:
+        type: string
+      id:
+        type: string
+      is_admin:
+        type: boolean
+      password:
+        type: string
+      phone_number:
         type: string
     type: object
   user.UserCard:
@@ -61,8 +77,15 @@ definitions:
       password:
         type: string
     type: object
+host: localhost:8080
 info:
-  contact: {}
+  contact:
+    email: khasanovasumbula@gmail.com
+    name: Sunbula Hasanova
+    url: https://t.me/Neverland_MJ
+  description: online meva va poliz mahsulotlari sotiladigan magazen APIsi
+  title: Arzon-market API
+  version: "1.0"
 paths:
   /add/card:
     post:
@@ -82,15 +105,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/server.message'
+            $ref: '#/definitions/api.message'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/server.message'
+            $ref: '#/definitions/api.message'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/server.message'
+            $ref: '#/definitions/api.message'
       summary: plastik karta qo'shish
       tags:
       - user
@@ -114,15 +137,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/server.message'
+            $ref: '#/definitions/api.message'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/server.message'
+            $ref: '#/definitions/api.message'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/server.message'
+            $ref: '#/definitions/api.message'
       summary: produktalar qo'shish
       tags:
       - admin
@@ -144,15 +167,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/server.message'
+            $ref: '#/definitions/api.message'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/server.message'
+            $ref: '#/definitions/api.message'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/server.message'
+            $ref: '#/definitions/api.message'
       summary: produkta qo'shish
       tags:
       - admin
@@ -170,19 +193,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/server.message'
+            $ref: '#/definitions/api.message'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/server.message'
+            $ref: '#/definitions/api.message'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/server.message'
+            $ref: '#/definitions/api.message'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/server.message'
+            $ref: '#/definitions/api.message'
       summary: buy product
       tags:
       - user
@@ -204,22 +227,22 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/user.PreLoginUser'
+            $ref: '#/definitions/user.User'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/server.message'
-        "404":
-          description: Not Found
+            $ref: '#/definitions/api.message'
+        "422":
+          description: Unprocessable Entity
           schema:
-            $ref: '#/definitions/server.message'
+            $ref: '#/definitions/api.message'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/server.message'
+            $ref: '#/definitions/api.message'
       summary: sign in
       tags:
-      - users
+      - auth
   /product/{id}:
     get:
       description: bitta produkta haqida ma'lumotlarni olish
@@ -239,15 +262,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/server.message'
+            $ref: '#/definitions/api.message'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/server.message'
+            $ref: '#/definitions/api.message'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/server.message'
+            $ref: '#/definitions/api.message'
       summary: produkta
       tags:
       - user
@@ -266,7 +289,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/server.message'
+            $ref: '#/definitions/api.message'
       summary: hamma produktalarni listi
       tags:
       - user
@@ -288,18 +311,22 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/user.PreSignUpUser'
+            $ref: '#/definitions/user.User'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/server.message'
+            $ref: '#/definitions/api.message'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/api.message'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/server.message'
+            $ref: '#/definitions/api.message'
       summary: sign up
       tags:
-      - users
+      - auth
   /users:
     get:
       description: hamma userlar ro'yxatini chiqarish
@@ -315,11 +342,11 @@ paths:
         "405":
           description: Method Not Allowed
           schema:
-            $ref: '#/definitions/server.message'
+            $ref: '#/definitions/api.message'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/server.message'
+            $ref: '#/definitions/api.message'
       summary: hamma userlar ro'yxati
       tags:
       - admin

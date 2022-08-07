@@ -12,9 +12,10 @@ type Product struct {
 	Price         int    `json:"price,omitempty"`
 	OriginalPrice int    `json:"original_price,omitempty"`
 	ImageLink     string `json:"image_link,omitempty"`
+	Category      string `json:"category,omitempty"`
 }
 
-func New(name, description, link string, q, p int) *Product {
+func New(name, description, link, category string, q, p int) *Product {
 	id := uuid.New()
 	op := p / 2
 	return &Product{
@@ -25,5 +26,6 @@ func New(name, description, link string, q, p int) *Product {
 		Price:         p,
 		OriginalPrice: op,
 		ImageLink: link,
+		Category: category,
 	}
 }

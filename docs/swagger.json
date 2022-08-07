@@ -1,8 +1,17 @@
 {
     "swagger": "2.0",
     "info": {
-        "contact": {}
+        "description": "online meva va poliz mahsulotlari sotiladigan magazen APIsi",
+        "title": "Arzon-market API",
+        "contact": {
+            "name": "Sunbula Hasanova",
+            "url": "https://t.me/Neverland_MJ",
+            "email": "khasanovasumbula@gmail.com"
+        },
+        "version": "1.0"
     },
+    "host": "localhost:8080",
+    "basePath": "/api",
     "paths": {
         "/add/card": {
             "post": {
@@ -32,19 +41,19 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     }
                 }
@@ -81,19 +90,19 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     }
                 }
@@ -127,19 +136,19 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     }
                 }
@@ -167,25 +176,25 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     }
                 }
@@ -201,7 +210,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "users"
+                    "auth"
                 ],
                 "summary": "sign in",
                 "parameters": [
@@ -219,25 +228,25 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/user.PreLoginUser"
+                            "$ref": "#/definitions/user.User"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     },
-                    "404": {
-                        "description": "Not Found",
+                    "422": {
+                        "description": "Unprocessable Entity",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     }
                 }
@@ -266,7 +275,7 @@
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     }
                 }
@@ -301,19 +310,19 @@
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     }
                 }
@@ -329,7 +338,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "users"
+                    "auth"
                 ],
                 "summary": "sign up",
                 "parameters": [
@@ -347,19 +356,25 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/user.PreSignUpUser"
+                            "$ref": "#/definitions/user.User"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/api.message"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     }
                 }
@@ -388,13 +403,13 @@
                     "405": {
                         "description": "Method Not Allowed",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     }
                 }
@@ -402,9 +417,20 @@
         }
     },
     "definitions": {
+        "api.message": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "product.Product": {
             "type": "object",
             "properties": {
+                "category": {
+                    "type": "string"
+                },
                 "description": {
                     "type": "string"
                 },
@@ -428,14 +454,6 @@
                 }
             }
         },
-        "server.message": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
         "user.Card": {
             "type": "object",
             "properties": {
@@ -456,10 +474,10 @@
         "user.PreLoginUser": {
             "type": "object",
             "properties": {
-                "email": {
+                "password": {
                     "type": "string"
                 },
-                "password": {
+                "phone_number": {
                     "type": "string"
                 }
             }
@@ -467,13 +485,33 @@
         "user.PreSignUpUser": {
             "type": "object",
             "properties": {
-                "email": {
-                    "type": "string"
-                },
                 "full_name": {
                     "type": "string"
                 },
                 "password": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                }
+            }
+        },
+        "user.User": {
+            "type": "object",
+            "properties": {
+                "full_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_admin": {
+                    "type": "boolean"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "phone_number": {
                     "type": "string"
                 }
             }

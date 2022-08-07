@@ -1,9 +1,11 @@
 package main
 
 import (
+	"github.com/NeverlandMJ/arzon-market/api"
 	"github.com/NeverlandMJ/arzon-market/config"
 	"github.com/NeverlandMJ/arzon-market/postgres"
-	"github.com/NeverlandMJ/arzon-market/server"
+	"github.com/NeverlandMJ/arzon-market/service"
+	"github.com/NeverlandMJ/arzon-market/storage"
 )
 
 func main() {
@@ -17,8 +19,9 @@ func main() {
 		panic(err)
 	}
 
-	repo := server.NewPostgresRepository(db)
-	r := server.NewRouter(repo)
+	repo := storage.NewPostgresRepository(db)
+	serve := service.NewService(repo)
+	r := api.NewRouter(serve)
 
 	r.Run()
 }

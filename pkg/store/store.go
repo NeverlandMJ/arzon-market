@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
-	"github.com/NeverlandMJ/arzon-market/product"
-	"github.com/NeverlandMJ/arzon-market/user"
+	"github.com/NeverlandMJ/arzon-market/pkg/product"
+	"github.com/NeverlandMJ/arzon-market/pkg/user"
 	"time"
 )
 

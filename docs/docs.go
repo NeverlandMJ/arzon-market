@@ -10,7 +10,11 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "contact": {},
+        "contact": {
+            "name": "Sunbula Hasanova",
+            "url": "https://t.me/Neverland_MJ",
+            "email": "khasanovasumbula@gmail.com"
+        },
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
@@ -44,19 +48,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     }
                 }
@@ -93,19 +97,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     }
                 }
@@ -139,19 +143,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     }
                 }
@@ -179,25 +183,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     }
                 }
@@ -213,7 +217,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "users"
+                    "auth"
                 ],
                 "summary": "sign in",
                 "parameters": [
@@ -231,25 +235,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/user.PreLoginUser"
+                            "$ref": "#/definitions/user.User"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     },
-                    "404": {
-                        "description": "Not Found",
+                    "422": {
+                        "description": "Unprocessable Entity",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     }
                 }
@@ -278,7 +282,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     }
                 }
@@ -313,19 +317,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     }
                 }
@@ -341,7 +345,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "users"
+                    "auth"
                 ],
                 "summary": "sign up",
                 "parameters": [
@@ -359,19 +363,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/user.PreSignUpUser"
+                            "$ref": "#/definitions/user.User"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/api.message"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     }
                 }
@@ -400,13 +410,13 @@ const docTemplate = `{
                     "405": {
                         "description": "Method Not Allowed",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/server.message"
+                            "$ref": "#/definitions/api.message"
                         }
                     }
                 }
@@ -414,9 +424,20 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "api.message": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "product.Product": {
             "type": "object",
             "properties": {
+                "category": {
+                    "type": "string"
+                },
                 "description": {
                     "type": "string"
                 },
@@ -440,14 +461,6 @@ const docTemplate = `{
                 }
             }
         },
-        "server.message": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
         "user.Card": {
             "type": "object",
             "properties": {
@@ -468,10 +481,10 @@ const docTemplate = `{
         "user.PreLoginUser": {
             "type": "object",
             "properties": {
-                "email": {
+                "password": {
                     "type": "string"
                 },
-                "password": {
+                "phone_number": {
                     "type": "string"
                 }
             }
@@ -479,13 +492,33 @@ const docTemplate = `{
         "user.PreSignUpUser": {
             "type": "object",
             "properties": {
-                "email": {
-                    "type": "string"
-                },
                 "full_name": {
                     "type": "string"
                 },
                 "password": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                }
+            }
+        },
+        "user.User": {
+            "type": "object",
+            "properties": {
+                "full_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_admin": {
+                    "type": "boolean"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "phone_number": {
                     "type": "string"
                 }
             }
@@ -515,12 +548,12 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "",
-	Host:             "",
-	BasePath:         "",
+	Version:          "1.0",
+	Host:             "localhost:8080",
+	BasePath:         "/api",
 	Schemes:          []string{},
-	Title:            "",
-	Description:      "",
+	Title:            "Arzon-market API",
+	Description:      "online meva va poliz mahsulotlari sotiladigan magazen APIsi",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 }
