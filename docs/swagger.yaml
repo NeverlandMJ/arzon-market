@@ -102,12 +102,16 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
+        "201":
+          description: Created
           schema:
             $ref: '#/definitions/api.message'
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/api.message'
+        "401":
+          description: Unauthorized
           schema:
             $ref: '#/definitions/api.message'
         "500":
@@ -198,8 +202,8 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/api.message'
-        "404":
-          description: Not Found
+        "401":
+          description: Unauthorized
           schema:
             $ref: '#/definitions/api.message'
         "500":
@@ -232,8 +236,8 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/api.message'
-        "422":
-          description: Unprocessable Entity
+        "401":
+          description: Unauthorized
           schema:
             $ref: '#/definitions/api.message'
         "500":
@@ -273,7 +277,7 @@ paths:
             $ref: '#/definitions/api.message'
       summary: produkta
       tags:
-      - user
+      - public
   /product/list:
     get:
       description: barcha produktalarni ko'rsatish
@@ -292,7 +296,7 @@ paths:
             $ref: '#/definitions/api.message'
       summary: hamma produktalarni listi
       tags:
-      - user
+      - public
   /register:
     post:
       consumes:

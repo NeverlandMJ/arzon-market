@@ -4,9 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
-	"github.com/NeverlandMJ/arzon-market/pkg/product"
-	"github.com/NeverlandMJ/arzon-market/pkg/user"
 	"time"
+
+	"github.com/NeverlandMJ/arzon-market/pkg/product"
 )
 
 var errNotEnoughQuantity = errors.New("we don't have enough product")
@@ -19,7 +19,7 @@ type Sales struct {
 	Time         time.Time `json:"time,omitempty"`
 }
 
-func Sell(p product.Product, quantity int, u user.User) (Sales, product.Product, error) {
+func Sell(p product.Product, quantity int, uID string) (Sales, product.Product, error) {
 	profit := p.Price * quantity
 
 	if p.Quantity < quantity {
@@ -27,7 +27,7 @@ func Sell(p product.Product, quantity int, u user.User) (Sales, product.Product,
 	}
 
 	sales := Sales{
-		CustomerID:   u.ID,
+		CustomerID:   uID,
 		ProductID:    p.ID,
 		SoldQuantity: quantity,
 		Profit:       profit,

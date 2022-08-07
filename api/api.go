@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/NeverlandMJ/arzon-market/pkg/middlewares"
 	"github.com/NeverlandMJ/arzon-market/pkg/product"
 	"github.com/NeverlandMJ/arzon-market/pkg/user"
 	"github.com/NeverlandMJ/arzon-market/service"
@@ -49,17 +50,20 @@ func NewRouter(serv service.Handler) *gin.Engine {
 
 	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	public := router.Group("/api")
+	auth := router.Group("/api/auth")
+	auth.POST("/register", s.SignUp)
+	auth.POST("/login", s.Login)
 
-	public.POST("/register", s.SignUp)
-	public.POST("/login", s.Login)
-	public.POST("/add/card", s.AddCard)
-	public.GET("//product/list", s.ListProducts)
-	public.GET("/buy/", s.BuyProduct)
-	public.GET("/product/:id", s.GetProduct)
+	authored := router.Group("/api")
+	authored.Use(middlewares.Authentication)
+	authored.POST("/add/card", s.AddCard)
+	authored.GET("/buy/", s.BuyProduct)
+
+	router.GET("/api/product/:id", s.GetProduct)
+	router.GET("/api/product/list", s.ListProducts)
 
 	protected := router.Group("api/admin")
-
+	protected.Use(middlewares.CheckAdmin)
 	protected.GET("/users", s.ListUsers)
 	protected.POST("/add/product", s.AddProduct)
 	protected.POST("/add/list/product", s.AddProducts)
@@ -116,7 +120,7 @@ func (a *api) SignUp(c *gin.Context) {
 // @Param        request body user.PreLoginUser  true  "User info"
 // @Success      200  {object}  user.User
 // @Failure      400  {object} 	message
-// @Failure      422  {object}  message
+// @Failure      401  {object}  message
 // @Failure      500  {object} 	message
 // @Router       /login [POST]
 func (a *api) Login(c *gin.Context) {
@@ -129,17 +133,27 @@ func (a *api) Login(c *gin.Context) {
 		return
 	}
 
-	u, err := a.serve.LoginUser(c.Request.Context(), tempUser)
+	u, token, err := a.serve.LoginUser(c.Request.Context(), tempUser)
 
 	if errors.Is(err, service.ErrUserNotExist) {
 		r := message{"user mavjud emas"}
-		c.JSON(http.StatusUnprocessableEntity, r)
+		c.JSON(http.StatusUnauthorized, r)
 		return
 	} else if errors.Is(err, service.ErrServer) {
 		r := message{"serverda xatolik mavjud"}
 		c.JSON(http.StatusInternalServerError, r)
 		return
 	}
+
+	c.SetCookie(
+		"token",
+		token,
+		3600,
+		"/",
+		"localhost",
+		false,
+		true,
+	)
 
 	a.user = u
 	c.JSON(http.StatusOK, u)
@@ -151,11 +165,27 @@ func (a *api) Login(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        request body  user.Card true "Card info"
-// @Success      200  {object}  message
+// @Success      201  {object}  message
 // @Failure      400  {object}  message
+// @Failure      401  {object}  message
 // @Failure      500  {object}  message
 // @Router       /add/card [post]
 func (a *api) AddCard(c *gin.Context) {
+	v, ok := c.Get("claims")
+	if !ok {
+		r := message{"user token mavjud emas"}
+		c.JSON(http.StatusUnauthorized, r)
+		return
+	}
+
+	claims, ok := v.(*service.Claims)
+	fmt.Println(claims)
+	if !ok {
+		r := message{"looks like cookie isn't set"}
+		c.JSON(http.StatusUnauthorized, r)
+		return
+	}
+
 	var card user.Card
 
 	if err := c.BindJSON(&card); err != nil {
@@ -164,7 +194,7 @@ func (a *api) AddCard(c *gin.Context) {
 		return
 	}
 
-	_, err := a.serve.CreateCard(c.Request.Context(), a.user, card)
+	_, err := a.serve.CreateCard(c.Request.Context(), claims.ID, card)
 
 	if err != nil {
 		r := message{"error in creating new card"}
@@ -183,10 +213,25 @@ func (a *api) AddCard(c *gin.Context) {
 // @Param        name query string quantity query int false "Buy product"
 // @Success      200  {object}  message
 // @Failure      400  {object} 	message
-// @Failure      404  {object}  message
+// @Failure      401  {object}  message
 // @Failure      500  {object}  message
 // @Router       /buy/ [GET]
 func (a *api) BuyProduct(c *gin.Context) {
+	v, ok := c.Get("claims")
+	if !ok {
+		r := message{"user token mavjud emas"}
+		c.JSON(http.StatusUnauthorized, r)
+		return
+	}
+
+	claims, ok := v.(*service.Claims)
+	fmt.Println(claims)
+	if !ok {
+		r := message{"looks like cookie isn't set"}
+		c.JSON(http.StatusUnauthorized, r)
+		return
+	}
+
 	productName, ok := c.GetQuery("name")
 	if !ok {
 		r := message{"empty query"}
@@ -207,7 +252,7 @@ func (a *api) BuyProduct(c *gin.Context) {
 		return
 	}
 
-	err = a.serve.SellProduct(c.Request.Context(), productName, q, a.user)
+	err = a.serve.SellProduct(c.Request.Context(), productName, q, claims.ID)
 
 	if err != nil {
 		if errors.Is(err, service.ErrProductNotExist) {
@@ -231,7 +276,7 @@ func (a *api) BuyProduct(c *gin.Context) {
 
 // @Summary      hamma produktalarni listi
 // @Description  barcha produktalarni ko'rsatish
-// @Tags         user
+// @Tags         public
 // @Produce      json
 // @Success      200  {object}  []product.Product
 // @Failure      500  {object}  message
@@ -251,7 +296,7 @@ func (a *api) ListProducts(c *gin.Context) {
 
 // @Summary      produkta
 // @Description  bitta produkta haqida ma'lumotlarni olish
-// @Tags         user
+// @Tags         public
 // @Produce      json
 // @Param        id   path      int  true  "Product ID"
 // @Success      200  {object}  product.Product
@@ -295,11 +340,14 @@ func (a *api) GetProduct(c *gin.Context) {
 // @Failure      500  {object}  message
 // @Router       /add/product [POST]
 func (a *api) AddProduct(c *gin.Context) {
-	if !a.user.IsAdmin {
+	_, ok := c.Get("claims")
+	if !ok {
 		r := message{"user admin emas"}
 		c.JSON(http.StatusMethodNotAllowed, r)
 		return
+
 	}
+
 	p := product.Product{}
 
 	if err := c.BindJSON(&p); err != nil {
@@ -332,10 +380,12 @@ func (a *api) AddProduct(c *gin.Context) {
 // @Failure      500  {object}  message
 // @Router       /add/list/product [POST]
 func (a *api) AddProducts(c *gin.Context) {
-	if !a.user.IsAdmin {
+	_, ok := c.Get("claims")
+	if !ok {
 		r := message{"user admin emas"}
 		c.JSON(http.StatusMethodNotAllowed, r)
 		return
+
 	}
 	tempProducts := []product.Product{}
 
@@ -366,12 +416,13 @@ func (a *api) AddProducts(c *gin.Context) {
 // @Failure      500  {object}  message
 // @Router       /users [GET]
 func (a *api) ListUsers(c *gin.Context) {
-	if !a.user.IsAdmin {
+	_, ok := c.Get("claims")
+	if !ok {
 		r := message{"user admin emas"}
 		c.JSON(http.StatusMethodNotAllowed, r)
 		return
-	}
 
+	}
 	users, err := a.serve.UsersList(c.Request.Context())
 	if err != nil {
 		r := message{"server xatoligi"}
