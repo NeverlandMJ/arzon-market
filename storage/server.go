@@ -135,7 +135,7 @@ func (r *PostgresRepository) GetUserByID(id string) (user.User, error) {
 func (r *PostgresRepository) AddProduct(ctx context.Context, p product.Product) error {
 	_, err := r.db.ExecContext(ctx, `
 		INSERT INTO product (id, name, description, quantity,  price, original_price, img, category)
-		VALUES ($1, $2, $3, $4, $5, $6, $7)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 	`, p.ID, p.Name, p.Description, p.Quantity, p.Price, p.OriginalPrice, p.ImageLink, p.Category)
 
 	if err != nil {
@@ -152,7 +152,7 @@ func (r *PostgresRepository) AddProducts(ctx context.Context, ps []product.Produ
 	for _, p := range ps {
 		_, err := tx.ExecContext(ctx, `
 		INSERT INTO product (id, name, description, quantity, price, original_price, img, category)
-		VALUES ($1, $2, $3, $4, $5, $6, $7)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 		`, p.ID, p.Name, p.Description, p.Quantity, p.Price, p.OriginalPrice, p.ImageLink, p.Category)
 
 		if err != nil {
