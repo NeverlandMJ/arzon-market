@@ -31,7 +31,7 @@ func Authentication(c *gin.Context) {
 	tkn, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) {
 		return service.JwtKey, nil
 	})
-	
+
 	if err != nil {
 		if err == jwt.ErrSignatureInvalid {
 			r := message{"user ro'yxatdan o'tmagan"}
@@ -53,7 +53,6 @@ func Authentication(c *gin.Context) {
 	c.Next()
 }
 
-
 func CheckAdmin(c *gin.Context) {
 	cook, err := c.Request.Cookie("token")
 	if err != nil {
@@ -73,7 +72,7 @@ func CheckAdmin(c *gin.Context) {
 	tkn, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) {
 		return service.JwtKey, nil
 	})
-	
+
 	if err != nil {
 		if err == jwt.ErrSignatureInvalid {
 			r := message{"user ro'yxatdan o'tmagan"}
@@ -92,6 +91,9 @@ func CheckAdmin(c *gin.Context) {
 
 	if claims.IsAdmin {
 		c.Set("claims", claims)
+	} else {
+		r := message{"user admin emas"}
+		c.JSON(http.StatusMethodNotAllowed, r)
 	}
 
 	c.Next()

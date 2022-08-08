@@ -53,6 +53,7 @@ func NewRouter(serv service.Handler) *gin.Engine {
 	auth := router.Group("/api/auth")
 	auth.POST("/register", s.SignUp)
 	auth.POST("/login", s.Login)
+	auth.DELETE("/logout", s.Logout)
 
 	authored := router.Group("/api")
 	authored.Use(middlewares.Authentication)
@@ -159,6 +160,18 @@ func (a *api) Login(c *gin.Context) {
 	c.JSON(http.StatusOK, u)
 }
 
+// @Summary      log out
+// @Description  user log out qilishi
+// @Tags         auth
+// @Success      200  {object}  user.User
+// @Router       /auth/logout [DELETE]
+func (a *api) Logout(c *gin.Context) {
+	cook, _ := c.Request.Cookie("token")
+	cook.Value = "deleted"
+	r := message{"loged out"}
+	c.JSON(http.StatusOK, r)
+}
+
 // @Summary      plastik karta qo'shish
 // @Description  user o'zining plastik kartasini kiritishi
 // @Tags         user
@@ -210,7 +223,8 @@ func (a *api) AddCard(c *gin.Context) {
 // @Description  produkta sotib olish
 // @Tags         user
 // @Produce      json
-// @Param        name query string quantity query int false "Buy product"
+// @Param        name query string true "product name"
+// @Param        quantity query int true "product quantity"
 // @Success      200  {object}  message
 // @Failure      400  {object} 	message
 // @Failure      401  {object}  message
@@ -418,10 +432,7 @@ func (a *api) AddProducts(c *gin.Context) {
 func (a *api) ListUsers(c *gin.Context) {
 	_, ok := c.Get("claims")
 	if !ok {
-		r := message{"user admin emas"}
-		c.JSON(http.StatusMethodNotAllowed, r)
 		return
-
 	}
 	users, err := a.serve.UsersList(c.Request.Context())
 	if err != nil {

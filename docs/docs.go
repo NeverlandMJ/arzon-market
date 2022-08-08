@@ -254,6 +254,23 @@ const docTemplate = `{
                 }
             }
         },
+        "/auth/logout": {
+            "delete": {
+                "description": "user log out qilishi",
+                "tags": [
+                    "auth"
+                ],
+                "summary": "log out",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/user.User"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/register": {
             "post": {
                 "description": "user registratsiyadan o'tishi",
@@ -318,10 +335,18 @@ const docTemplate = `{
                 "summary": "buy product",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "product name",
+                        "name": "name",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
                         "type": "integer",
-                        "description": "Buy product",
+                        "description": "product quantity",
                         "name": "quantity",
-                        "in": "query"
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {

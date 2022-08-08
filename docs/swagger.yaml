@@ -255,6 +255,17 @@ paths:
       summary: sign in
       tags:
       - auth
+  /auth/logout:
+    delete:
+      description: user log out qilishi
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.User'
+      summary: log out
+      tags:
+      - auth
   /auth/register:
     post:
       consumes:
@@ -293,9 +304,15 @@ paths:
     get:
       description: produkta sotib olish
       parameters:
-      - description: Buy product
+      - description: product name
+        in: query
+        name: name
+        required: true
+        type: string
+      - description: product quantity
         in: query
         name: quantity
+        required: true
         type: integer
       produces:
       - application/json
