@@ -388,7 +388,7 @@ func (a *api) AddProduct(c *gin.Context) {
 // @Tags         admin
 // @Accept       json
 // @Produce      json
-// @Param        request body []product.Product true "Product info"
+// @Param        request body []product.PreAddProduct true "Product info"
 // @Success      200  {object}  message
 // @Failure      400  {object}  message
 // @Failure      500  {object}  message

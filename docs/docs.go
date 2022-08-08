@@ -94,7 +94,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/product.Product"
+                                "$ref": "#/definitions/product.PreAddProduct"
                             }
                         }
                     }

@@ -148,7 +148,7 @@ paths:
         required: true
         schema:
           items:
-            $ref: '#/definitions/product.Product'
+            $ref: '#/definitions/product.PreAddProduct'
           type: array
       produces:
       - application/json
