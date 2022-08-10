@@ -1,6 +1,10 @@
 package user
 
-import "github.com/google/uuid"
+import (
+	"fmt"
+
+	"github.com/google/uuid"
+)
 
 type User struct {
 	ID       string `json:"id,omitempty"`
@@ -46,7 +50,10 @@ func NewCard(cn string, bln int, userID string) *Card {
 	}
 }
 
-func NewUser(fn, pw, phone string) *User {
+func NewUser(fn, pw, phone string) (*User, error) {
+	if fn == "" || pw == "" || phone == "" {
+		return &User{}, fmt.Errorf("empty")
+	}
 	id := uuid.New()
 	return &User{
 		ID:       id.String(),
@@ -54,5 +61,5 @@ func NewUser(fn, pw, phone string) *User {
 		Password: pw,
 		PhoneNumber:    phone,
 		IsAdmin:  false,
-	}
+	}, nil
 }

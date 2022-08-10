@@ -78,7 +78,7 @@ func NewRouter(serv service.Handler) *gin.Engine {
 // @Accept       json
 // @Produce      json
 // @Param        request body user.PreSignUpUser  true  "User info"
-// @Success      200  {object}  user.User
+// @Success      200  {object}  message
 // @Failure      400  {object}  message
 // @Failure		 422 {object} message
 // @Failure      500  {object}  message
@@ -93,7 +93,7 @@ func (a *api) SignUp(c *gin.Context) {
 		return
 	}
 
-	newUser, err := a.serve.CreateUser(c.Request.Context(), tempUser)
+	 err := a.serve.CreateUser(c.Request.Context(), tempUser)
 
 	if errors.Is(err, service.ErrUserExist) {
 		r := message{"user mavjud"}
@@ -109,8 +109,8 @@ func (a *api) SignUp(c *gin.Context) {
 		return
 	}
 
-	a.user = newUser
-	c.JSON(http.StatusCreated, newUser)
+	r := message{"user succesfully created"}
+	c.JSON(http.StatusCreated, r)
 }
 
 // @Summary      sign in
@@ -119,7 +119,7 @@ func (a *api) SignUp(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        request body user.PreLoginUser  true  "User info"
-// @Success      200  {object}  user.User
+// @Success      200  {object}  message
 // @Failure      400  {object} 	message
 // @Failure      401  {object}  message
 // @Failure      500  {object} 	message
@@ -134,7 +134,7 @@ func (a *api) Login(c *gin.Context) {
 		return
 	}
 
-	u, token, err := a.serve.LoginUser(c.Request.Context(), tempUser)
+	token, err := a.serve.LoginUser(c.Request.Context(), tempUser)
 
 	if errors.Is(err, service.ErrUserNotExist) {
 		r := message{"user mavjud emas"}
@@ -156,8 +156,8 @@ func (a *api) Login(c *gin.Context) {
 		true,
 	)
 
-	a.user = u
-	c.JSON(http.StatusOK, u)
+	r := message{"succesfully loged in"}
+	c.JSON(http.StatusOK, r)
 }
 
 // @Summary      log out
@@ -223,7 +223,7 @@ func (a *api) AddCard(c *gin.Context) {
 // @Description  produkta sotib olish
 // @Tags         user
 // @Produce      json
-// @Param        name query string true "product name"
+// @Param        id query string true "product id"
 // @Param        quantity query int true "product quantity"
 // @Success      200  {object}  message
 // @Failure      400  {object} 	message
@@ -233,20 +233,18 @@ func (a *api) AddCard(c *gin.Context) {
 func (a *api) BuyProduct(c *gin.Context) {
 	v, ok := c.Get("claims")
 	if !ok {
-		r := message{"user token mavjud emas"}
-		c.JSON(http.StatusUnauthorized, r)
 		return
 	}
 
 	claims, ok := v.(*service.Claims)
-	fmt.Println(claims)
+	// fmt.Println(claims)
 	if !ok {
 		r := message{"looks like cookie isn't set"}
 		c.JSON(http.StatusUnauthorized, r)
 		return
 	}
 
-	productName, ok := c.GetQuery("name")
+	productID, ok := c.GetQuery("id")
 	if !ok {
 		r := message{"empty query"}
 		c.JSON(http.StatusBadRequest, r)
@@ -262,11 +260,11 @@ func (a *api) BuyProduct(c *gin.Context) {
 	if err != nil {
 		r := message{"invalid query"}
 		c.JSON(http.StatusBadRequest, r)
-		fmt.Println(err)
+		// fmt.Println(err)
 		return
 	}
 
-	err = a.serve.SellProduct(c.Request.Context(), productName, q, claims.ID)
+	err = a.serve.SellProduct(c.Request.Context(), productID, q, claims.ID)
 
 	if err != nil {
 		if errors.Is(err, service.ErrProductNotExist) {
@@ -281,7 +279,15 @@ func (a *api) BuyProduct(c *gin.Context) {
 			r := message{"server xatoligi"}
 			c.JSON(http.StatusInternalServerError, r)
 			return
-		}
+		}else if errors.Is(err, service.ErrNotEnoughBalance){
+			r := message{"userni puli yetmaydi"}
+			c.JSON(http.StatusBadRequest, r)
+			return
+		}else if errors.Is(err, service.ErrCardNotExist){
+			r := message{"userda karta mavjud emas"}
+			c.JSON(http.StatusBadRequest, r)
+			return
+		}	
 	}
 
 	r := message{"product sotildi"}

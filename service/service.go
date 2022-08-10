@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"log"
 	"time"
 
@@ -21,10 +20,12 @@ var ErrUserNotExist = errors.New("user doesn't exist")
 var ErrServer = errors.New("server error")
 var ErrProductNotExist = errors.New("product doesn't exist")
 var ErrQuantityExceeded = errors.New("quantity exceeded")
+var ErrCardNotExist = errors.New("card isn't set")
+var ErrNotEnoughBalance = errors.New("balance isn't enough")
 
 type Handler interface {
-	CreateUser(ctx context.Context, tempUser user.PreSignUpUser) (user.User, error)
-	LoginUser(ctx context.Context, tempUser user.PreLoginUser) (user.User, string, error)
+	CreateUser(ctx context.Context, tempUser user.PreSignUpUser)  error
+	LoginUser(ctx context.Context, tempUser user.PreLoginUser) (string, error)
 	CreateCard(ctx context.Context, ownerID string, card user.Card) (user.Card, error)
 	SellProduct(ctx context.Context, productName string, quantity int, uID string) error
 	AllProducts(ctx context.Context) ([]product.Product, error)
@@ -44,51 +45,50 @@ func NewService(repo storage.Repository) *Service {
 	}
 }
 
-func (s *Service) CreateUser(ctx context.Context, tempUser user.PreSignUpUser) (user.User, error) {
-	fmt.Println(tempUser)
-	if tempUser.Name == "" || tempUser.PhoneNumber == "" || tempUser.Password == "" {
-		return user.User{}, ErrInvalidUser
-	}
+func (s *Service) CreateUser(ctx context.Context, tempUser user.PreSignUpUser)  error {
 
-	newUser := user.NewUser(
+	newUser, err := user.NewUser(
 		tempUser.Name,
 		tempUser.Password,
 		tempUser.PhoneNumber,
 	)
-	err := s.repo.AddUser(ctx, *newUser)
-
 	if err != nil {
-		log.Println("Service(): ", err)
-		return user.User{}, ErrUserExist
+		return ErrInvalidUser
 	}
 
-	newUser.Password = ""
-	return *newUser, nil
+	err = s.repo.AddUser(ctx, *newUser)
+
+	if err != nil {
+		// log.Println("Service(): ", err)
+		return ErrUserExist
+	}
+
+	return  nil
 }
 
-func (s *Service) LoginUser(ctx context.Context, tempUser user.PreLoginUser) (user.User, string, error) {
+func (s *Service) LoginUser(ctx context.Context, tempUser user.PreLoginUser) (string, error) {
 	if tempUser.PhoneNumber == "" || tempUser.Password == "" {
-		return user.User{}, "", ErrInvalidUser
+		return "", ErrInvalidUser
 	}
 
 	u, err := s.repo.GetUser(ctx, tempUser.PhoneNumber, tempUser.Password)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return user.User{}, "", ErrUserNotExist
+			return "", ErrUserNotExist
 		} else {
 			log.Println("Service(): ", err)
-			return user.User{}, "", ErrServer
+			return "", ErrServer
 		}
 	}
 
 	expirationTime := time.Now().Add(1 * time.Hour)
 	// Create the JWT claims, which includes the username and expiry time
 	claims := &Claims{
-		ID: u.ID,
+		ID:          u.ID,
 		PhoneNumber: u.PhoneNumber,
-		IsAdmin: u.IsAdmin,
-		FullName: u.FullName,
+		IsAdmin:     u.IsAdmin,
+		FullName:    u.FullName,
 		StandardClaims: jwt.StandardClaims{
 			// In JWT, the expiry time is expressed as unix milliseconds
 			ExpiresAt: expirationTime.Unix(),
@@ -101,14 +101,13 @@ func (s *Service) LoginUser(ctx context.Context, tempUser user.PreLoginUser) (us
 	tokenString, err := token.SignedString(JwtKey)
 	if err != nil {
 		// If there is an error in creating the JWT return an internal server error
-		return user.User{}, "", ErrServer
+		return "", ErrServer
 	}
 
-	u.Password = ""
-	return u, tokenString, nil
+	return tokenString, nil
 }
 
-func (s *Service) CreateCard(ctx context.Context, ownerID string,  card user.Card) (user.Card, error) {
+func (s *Service) CreateCard(ctx context.Context, ownerID string, card user.Card) (user.Card, error) {
 	card.OwnerID = ownerID
 	newCard := user.NewCard(card.CardNumber, card.Balance, card.OwnerID)
 
@@ -121,8 +120,8 @@ func (s *Service) CreateCard(ctx context.Context, ownerID string,  card user.Car
 	return *newCard, nil
 }
 
-func (s *Service) SellProduct(ctx context.Context, productName string, quantity int, uID string) error {
-	gotProduct, err := s.repo.GetProduct(ctx, productName)
+func (s *Service) SellProduct(ctx context.Context, proID string, quantity int, uID string) error {
+	gotProduct, err := s.repo.GetProduct(ctx, proID)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -133,14 +132,29 @@ func (s *Service) SellProduct(ctx context.Context, productName string, quantity 
 		}
 	}
 
-	sales, soldProduct, err := store.Sell(gotProduct, quantity, uID)
+	userBalance, err := s.repo.GetBalance(uID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return ErrCardNotExist
+		} else {
+			log.Println(err)
+			return ErrServer
+		}
+	}
+
+	sales, soldProduct, err := store.Sell(gotProduct, quantity, userBalance, uID)
 
 	if err != nil {
-		return ErrQuantityExceeded
+		if errors.Is(err, store.ErrNotEnoughQuantity) {
+			return ErrQuantityExceeded
+		}else {
+			return ErrNotEnoughBalance
+		}
 	}
 
 	err = s.repo.SellProduct(ctx, sales, soldProduct)
 	if err != nil {
+		log.Println(err)
 		return ErrServer
 	}
 

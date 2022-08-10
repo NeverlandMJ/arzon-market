@@ -239,7 +239,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/user.User'
+            $ref: '#/definitions/api.message'
         "400":
           description: Bad Request
           schema:
@@ -284,7 +284,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/user.User'
+            $ref: '#/definitions/api.message'
         "400":
           description: Bad Request
           schema:
@@ -304,9 +304,9 @@ paths:
     get:
       description: produkta sotib olish
       parameters:
-      - description: product name
+      - description: product id
         in: query
-        name: name
+        name: id
         required: true
         type: string
       - description: product quantity

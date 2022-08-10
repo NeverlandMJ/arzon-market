@@ -19,4 +19,5 @@ type Repository interface {
 	AddProducts(ctx context.Context, ps []product.Product) error
 	AddCard(ctx context.Context, c user.Card) error
 	GetUserByID(id string) (user.User, error)
+	GetBalance(ownerID string) (int, error)
 }

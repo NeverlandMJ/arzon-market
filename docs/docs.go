@@ -230,7 +230,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/user.User"
+                            "$ref": "#/definitions/api.message"
                         }
                     },
                     "400": {
@@ -299,7 +299,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/user.User"
+                            "$ref": "#/definitions/api.message"
                         }
                     },
                     "400": {
@@ -336,8 +336,8 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "product name",
-                        "name": "name",
+                        "description": "product id",
+                        "name": "id",
                         "in": "query",
                         "required": true
                     },

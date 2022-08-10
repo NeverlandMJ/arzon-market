@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log"
 
 	"github.com/NeverlandMJ/arzon-market/pkg/product"
 	"github.com/NeverlandMJ/arzon-market/pkg/store"
@@ -201,6 +202,16 @@ func (r *PostgresRepository) ListProducts(ctx context.Context) ([]product.Produc
 	}
 
 	return products, nil
+}
+
+func (r *PostgresRepository) GetBalance(ownerID string) (int, error) {
+	balance := 0
+	err := r.db.QueryRow("SELECT balance FROM card WHERE owner=$1", ownerID).Scan(&balance)
+	if err != nil {
+		log.Println("GetBalance(): ", err)
+		return balance, err
+	}
+	return balance, nil
 }
 
 func (r *PostgresRepository) SellProduct(ctx context.Context, sale store.Sales, product product.Product) error {
