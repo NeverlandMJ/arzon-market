@@ -177,7 +177,7 @@ func (a *api) Logout(c *gin.Context) {
 // @Tags         user
 // @Accept       json
 // @Produce      json
-// @Param        request body  user.Card true "Card info"
+// @Param        request body  user.PreAddCard true "Card info"
 // @Success      201  {object}  message
 // @Failure      400  {object}  message
 // @Failure      401  {object}  message
@@ -199,7 +199,7 @@ func (a *api) AddCard(c *gin.Context) {
 		return
 	}
 
-	var card user.Card
+	var card user.PreAddCard
 
 	if err := c.BindJSON(&card); err != nil {
 		r := message{"invalid json"}

@@ -25,6 +25,10 @@ type PreLoginUser struct {
 	Password string `json:"password,omitempty"`
 }
 
+type PreAddCard struct {
+	CardNumber string `json:"card_number,omitempty"`
+	Balance    int    `json:"balance,omitempty"`
+}
 type Card struct {
 	ID         string `json:"id,omitempty"`
 	CardNumber string `json:"card_number,omitempty"`

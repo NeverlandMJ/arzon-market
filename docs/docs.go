@@ -40,7 +40,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/user.Card"
+                            "$ref": "#/definitions/user.PreAddCard"
                         }
                     }
                 ],
@@ -515,19 +515,13 @@ const docTemplate = `{
                 }
             }
         },
-        "user.Card": {
+        "user.PreAddCard": {
             "type": "object",
             "properties": {
                 "balance": {
                     "type": "integer"
                 },
                 "card_number": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "owner_id": {
                     "type": "string"
                 }
             }

@@ -24,17 +24,17 @@ type PreAddProduct struct {
 	Price       int    `json:"price,omitempty"`
 }
 
-func New(name, description, link, category string, q, p int) *Product {
+func New(p PreAddProduct) *Product {
 	id := uuid.New()
-	op := p / 2
+	op := p.Price / 2
 	return &Product{
 		ID:            id.String(),
-		Name:          name,
-		Description:   description,
-		Quantity:      q,
-		Price:         p,
+		Name:          p.Name,
+		Description:   p.Description,
+		Quantity:      p.Quantity,
+		Price:         p.Price,
 		OriginalPrice: op,
-		ImageLink:     link,
-		Category:      category,
+		ImageLink:     p.ImageLink,
+		Category:      p.Category,
 	}
 }

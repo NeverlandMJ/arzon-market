@@ -26,7 +26,7 @@ var ErrNotEnoughBalance = errors.New("balance isn't enough")
 type Handler interface {
 	CreateUser(ctx context.Context, tempUser user.PreSignUpUser)  error
 	LoginUser(ctx context.Context, tempUser user.PreLoginUser) (string, error)
-	CreateCard(ctx context.Context, ownerID string, card user.Card) (user.Card, error)
+	CreateCard(ctx context.Context, ownerID string, card user.PreAddCard) (user.Card, error)
 	SellProduct(ctx context.Context, productName string, quantity int, uID string) error
 	AllProducts(ctx context.Context) ([]product.Product, error)
 	GetOneProductInfo(ctx context.Context, name string) (product.Product, error)
@@ -107,9 +107,8 @@ func (s *Service) LoginUser(ctx context.Context, tempUser user.PreLoginUser) (st
 	return tokenString, nil
 }
 
-func (s *Service) CreateCard(ctx context.Context, ownerID string, card user.Card) (user.Card, error) {
-	card.OwnerID = ownerID
-	newCard := user.NewCard(card.CardNumber, card.Balance, card.OwnerID)
+func (s *Service) CreateCard(ctx context.Context, ownerID string, card user.PreAddCard) (user.Card, error) {
+	newCard := user.NewCard(card.CardNumber, card.Balance, ownerID)
 
 	err := s.repo.AddCard(ctx, *newCard)
 	if err != nil {
@@ -118,7 +117,7 @@ func (s *Service) CreateCard(ctx context.Context, ownerID string, card user.Card
 	}
 
 	return *newCard, nil
-}
+} 
 
 func (s *Service) SellProduct(ctx context.Context, proID string, quantity int, uID string) error {
 	gotProduct, err := s.repo.GetProduct(ctx, proID)
@@ -189,7 +188,7 @@ func (s *Service) GetOneProductInfo(ctx context.Context, id string) (product.Pro
 }
 
 func (s *Service) ProductAdd(ctx context.Context, p product.PreAddProduct) error {
-	product := product.New(p.Name, p.Description, p.ImageLink, p.Category, p.Quantity, p.Price)
+	product := product.New(p)
 	err := s.repo.AddProduct(ctx, *product)
 	if err != nil {
 		log.Println(err)
@@ -201,7 +200,7 @@ func (s *Service) ProductAdd(ctx context.Context, p product.PreAddProduct) error
 func (s *Service) ProductsAdd(ctx context.Context, ps []product.PreAddProduct) error {
 	products := []product.Product{}
 	for _, p := range ps {
-		product := product.New(p.Name, p.Description, p.ImageLink, p.Category, p.Quantity, p.Price)
+		product := product.New(p)
 		products = append(products, *product)
 	}
 

@@ -39,15 +39,11 @@ definitions:
       quantity:
         type: integer
     type: object
-  user.Card:
+  user.PreAddCard:
     properties:
       balance:
         type: integer
       card_number:
-        type: string
-      id:
-        type: string
-      owner_id:
         type: string
     type: object
   user.PreLoginUser:
@@ -113,7 +109,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/user.Card'
+          $ref: '#/definitions/user.PreAddCard'
       produces:
       - application/json
       responses:
