@@ -22,11 +22,11 @@ import (
 
 type api struct {
 	serve service.Handler
-	user  user.User
 }
 
 type message struct {
-	Message string `json:"message"`
+	Message string `json:"message,omitempty"`
+	Success bool   `json:"success,omitempty"`
 }
 
 // @title Arzon-market API
@@ -87,29 +87,44 @@ func (a *api) SignUp(c *gin.Context) {
 	tempUser := user.PreSignUpUser{}
 
 	if err := c.BindJSON(&tempUser); err != nil {
-		r := message{"invalid json"}
+		r := message{
+			Message: "invalid json",
+			Success: false,
+		}
 		c.JSON(http.StatusBadRequest, r)
 		fmt.Println(err)
 		return
 	}
 
-	 err := a.serve.CreateUser(c.Request.Context(), tempUser)
+	err := a.serve.CreateUser(c.Request.Context(), tempUser)
 
 	if errors.Is(err, service.ErrUserExist) {
-		r := message{"user mavjud"}
+		r := message{
+			Message: "user mavjud",
+			Success: false,
+		}
 		c.JSON(http.StatusUnprocessableEntity, r)
 		return
 	} else if errors.Is(err, service.ErrInvalidUser) {
-		r := message{"to'liq ma'lumot kiritilmagan"}
+		r := message{
+			Message: "to'liq ma'lumot kiritilmagan",
+			Success: false,
+		}
 		c.JSON(http.StatusBadRequest, r)
 		return
 	} else if err != nil {
-		r := message{"serverda xatolik mavjud"}
+		r := message{
+			Message: "serverda xatolik mavjud",
+			Success: false,
+		}
 		c.JSON(http.StatusInternalServerError, r)
 		return
 	}
 
-	r := message{"user succesfully created"}
+	r := message{
+		Message: "user succesfully created",
+		Success: true,
+	}
 	c.JSON(http.StatusCreated, r)
 }
 
@@ -128,7 +143,10 @@ func (a *api) Login(c *gin.Context) {
 	tempUser := user.PreLoginUser{}
 
 	if err := c.BindJSON(&tempUser); err != nil {
-		r := message{"invalid json"}
+		r := message{
+			Message: "invalid json",
+			Success: false,
+		}
 		c.JSON(http.StatusBadRequest, r)
 		fmt.Println(err)
 		return
@@ -137,11 +155,17 @@ func (a *api) Login(c *gin.Context) {
 	token, err := a.serve.LoginUser(c.Request.Context(), tempUser)
 
 	if errors.Is(err, service.ErrUserNotExist) {
-		r := message{"user mavjud emas"}
+		r := message{
+			Message: "user mavjud emas",
+			Success: false,
+		}
 		c.JSON(http.StatusUnauthorized, r)
 		return
 	} else if errors.Is(err, service.ErrServer) {
-		r := message{"serverda xatolik mavjud"}
+		r := message{
+			Message: "serverda xatolik mavjud",
+			Success: false,
+		}
 		c.JSON(http.StatusInternalServerError, r)
 		return
 	}
@@ -156,7 +180,10 @@ func (a *api) Login(c *gin.Context) {
 		true,
 	)
 
-	r := message{"succesfully loged in"}
+	r := message{
+		Message: "succesfully loged in",
+		Success: true,
+	}
 	c.JSON(http.StatusOK, r)
 }
 
@@ -168,7 +195,10 @@ func (a *api) Login(c *gin.Context) {
 func (a *api) Logout(c *gin.Context) {
 	cook, _ := c.Request.Cookie("token")
 	cook.Value = "deleted"
-	r := message{"loged out"}
+	r := message{
+		Message: "loged out",
+		Success: true,
+	}
 	c.JSON(http.StatusOK, r)
 }
 
@@ -186,7 +216,10 @@ func (a *api) Logout(c *gin.Context) {
 func (a *api) AddCard(c *gin.Context) {
 	v, ok := c.Get("claims")
 	if !ok {
-		r := message{"user token mavjud emas"}
+		r := message{
+			Message: "user token mavjud emas",
+			Success: false,
+		}
 		c.JSON(http.StatusUnauthorized, r)
 		return
 	}
@@ -194,7 +227,10 @@ func (a *api) AddCard(c *gin.Context) {
 	claims, ok := v.(*service.Claims)
 	fmt.Println(claims)
 	if !ok {
-		r := message{"looks like cookie isn't set"}
+		r := message{
+			Message: "looks like cookie isn't set",
+			Success: false,
+		}
 		c.JSON(http.StatusUnauthorized, r)
 		return
 	}
@@ -202,7 +238,10 @@ func (a *api) AddCard(c *gin.Context) {
 	var card user.PreAddCard
 
 	if err := c.BindJSON(&card); err != nil {
-		r := message{"invalid json"}
+		r := message{
+			Message: "invalid json",
+			Success: false,
+		}
 		c.JSON(http.StatusBadRequest, r)
 		return
 	}
@@ -210,12 +249,18 @@ func (a *api) AddCard(c *gin.Context) {
 	_, err := a.serve.CreateCard(c.Request.Context(), claims.ID, card)
 
 	if err != nil {
-		r := message{"error in creating new card"}
+		r := message{
+			Message: "error in creating new card",
+			Success: false,
+		}
 		c.JSON(http.StatusInternalServerError, r)
 		return
 	}
 
-	r := message{"card is added"}
+	r := message{
+		Message: "card is added",
+		Success: true,
+	}
 	c.JSON(http.StatusCreated, r)
 }
 
@@ -239,26 +284,38 @@ func (a *api) BuyProduct(c *gin.Context) {
 	claims, ok := v.(*service.Claims)
 	// fmt.Println(claims)
 	if !ok {
-		r := message{"looks like cookie isn't set"}
+		r := message{
+			Message: "looks like cookie isn't set",
+			Success: false,
+		}
 		c.JSON(http.StatusUnauthorized, r)
 		return
 	}
 
 	productID, ok := c.GetQuery("id")
 	if !ok {
-		r := message{"empty query"}
+		r := message{
+			Message: "empty query",
+			Success: false,
+		}
 		c.JSON(http.StatusBadRequest, r)
 		return
 	}
 	quantity, ok := c.GetQuery("quantity")
 	if !ok {
-		r := message{"empty query"}
+		r := message{
+			Message: "empty query",
+			Success: false,
+		}
 		c.JSON(http.StatusBadRequest, r)
 		return
 	}
 	q, err := strconv.Atoi(quantity)
 	if err != nil {
-		r := message{"invalid query"}
+		r := message{
+			Message: "invalid query",
+			Success: false,
+		}
 		c.JSON(http.StatusBadRequest, r)
 		// fmt.Println(err)
 		return
@@ -268,29 +325,47 @@ func (a *api) BuyProduct(c *gin.Context) {
 
 	if err != nil {
 		if errors.Is(err, service.ErrProductNotExist) {
-			r := message{"product mavjud emas"}
+			r := message{
+				Message: "product mavjud emas",
+				Success: false,
+			}
 			c.JSON(http.StatusBadRequest, r)
 			return
 		} else if errors.Is(err, service.ErrQuantityExceeded) {
-			r := message{"product miqdori bazada yetarli emas"}
+			r := message{
+				Message: "product miqdori bazada yetarli emas",
+				Success: false,
+			}
 			c.JSON(http.StatusBadRequest, r)
 			return
 		} else if errors.Is(err, service.ErrServer) {
-			r := message{"server xatoligi"}
+			r := message{
+				Message: "server xatoligi",
+				Success: false,
+			}
 			c.JSON(http.StatusInternalServerError, r)
 			return
-		}else if errors.Is(err, service.ErrNotEnoughBalance){
-			r := message{"userni puli yetmaydi"}
+		} else if errors.Is(err, service.ErrNotEnoughBalance) {
+			r := message{
+				Message: "userni puli yetmaydi",
+				Success: false,
+			}
 			c.JSON(http.StatusBadRequest, r)
 			return
-		}else if errors.Is(err, service.ErrCardNotExist){
-			r := message{"userda karta mavjud emas"}
+		} else if errors.Is(err, service.ErrCardNotExist) {
+			r := message{
+				Message: "userda karta mavjud emas",
+				Success: false,
+			}
 			c.JSON(http.StatusBadRequest, r)
 			return
-		}	
+		}
 	}
 
-	r := message{"product sotildi"}
+	r := message{
+		Message: "product sotildi",
+		Success: true,
+	}
 	c.JSON(http.StatusOK, r)
 }
 
@@ -305,7 +380,10 @@ func (a *api) ListProducts(c *gin.Context) {
 
 	products, err := a.serve.AllProducts(c.Request.Context())
 	if err != nil {
-		r := message{"hamma productlar haqida ma'lumot chiqmadi"}
+		r := message{
+			Message: "hamma productlar haqida ma'lumot chiqmadi",
+			Success: false,
+		}
 		c.JSON(http.StatusInternalServerError, r)
 		return
 	}
@@ -327,19 +405,28 @@ func (a *api) ListProducts(c *gin.Context) {
 func (a *api) GetProduct(c *gin.Context) {
 	productID, ok := c.Params.Get("id")
 	if !ok {
-		r := message{"invalid params"}
+		r := message{
+			Message: "invalid params",
+			Success: false,
+		}
 		c.JSON(http.StatusBadRequest, r)
 	}
 
 	p, err := a.serve.GetOneProductInfo(c.Request.Context(), productID)
 	if err != nil {
 		if errors.Is(err, service.ErrProductNotExist) {
-			r := message{"product mavjud emas"}
+			r := message{
+				Message: "product mavjud emas",
+				Success: false,
+			}
 			c.JSON(http.StatusBadGateway, r)
 			fmt.Println(err)
 			return
 		} else {
-			r := message{"server xatoligi"}
+			r := message{
+				Message: "server xatoligi",
+				Success: false,
+			}
 			c.JSON(http.StatusInternalServerError, r)
 			fmt.Println(err)
 			return
@@ -362,7 +449,10 @@ func (a *api) GetProduct(c *gin.Context) {
 func (a *api) AddProduct(c *gin.Context) {
 	_, ok := c.Get("claims")
 	if !ok {
-		r := message{"user admin emas"}
+		r := message{
+			Message: "user admin emas",
+			Success: false,
+		}
 		c.JSON(http.StatusMethodNotAllowed, r)
 		return
 
@@ -371,7 +461,10 @@ func (a *api) AddProduct(c *gin.Context) {
 	p := product.PreAddProduct{}
 
 	if err := c.BindJSON(&p); err != nil {
-		r := message{"invalid json"}
+		r := message{
+			Message: "invalid json",
+			Success: false,
+		}
 		c.JSON(http.StatusBadRequest, r)
 		fmt.Println(err)
 		return
@@ -379,13 +472,19 @@ func (a *api) AddProduct(c *gin.Context) {
 
 	err := a.serve.ProductAdd(c.Copy().Request.Context(), p)
 	if err != nil {
-		r := message{"server xatoligi"}
+		r := message{
+			Message: "server xatoligi",
+			Success: false,
+		}
 		c.JSON(http.StatusInternalServerError, r)
 		fmt.Println(err)
 		return
 	}
 
-	r := message{"product qo'shildi"}
+	r := message{
+		Message: "product qo'shildi",
+		Success: true,
+	}
 	c.JSON(http.StatusOK, r)
 }
 
@@ -402,7 +501,10 @@ func (a *api) AddProduct(c *gin.Context) {
 func (a *api) AddProducts(c *gin.Context) {
 	_, ok := c.Get("claims")
 	if !ok {
-		r := message{"user admin emas"}
+		r := message{
+			Message: "user admin emas",
+			Success: false,
+		}
 		c.JSON(http.StatusMethodNotAllowed, r)
 		return
 
@@ -410,20 +512,29 @@ func (a *api) AddProducts(c *gin.Context) {
 	tempProducts := []product.PreAddProduct{}
 
 	if err := c.BindJSON(&tempProducts); err != nil {
-		r := message{"invalid json"}
+		r := message{
+			Message: "invalid json",
+			Success: false,
+		}
 		c.JSON(http.StatusBadRequest, r)
 		fmt.Println(err)
 		return
 	}
 	err := a.serve.ProductsAdd(c.Request.Context(), tempProducts)
 	if err != nil {
-		r := message{"server xatoligi"}
+		r := message{
+			Message: "server xatoligi",
+			Success: false,
+		}
 		c.JSON(http.StatusInternalServerError, r)
 		fmt.Println(err)
 		return
 	}
 
-	r := message{"productlar qo'shildi"}
+	r := message{
+		Message: "productlar qo'shildi",
+		Success: true,
+	}
 	c.JSON(http.StatusOK, r)
 }
 
@@ -442,7 +553,10 @@ func (a *api) ListUsers(c *gin.Context) {
 	}
 	users, err := a.serve.UsersList(c.Request.Context())
 	if err != nil {
-		r := message{"server xatoligi"}
+		r := message{
+			Message: "server xatoligi",
+			Success: false,
+		}
 		c.JSON(http.StatusInternalServerError, r)
 		return
 	}
