@@ -25,8 +25,9 @@ func NewPostgresRepository(db *sql.DB) *PostgresRepository {
 
 func (r *PostgresRepository) ListUsers(ctx context.Context) ([]user.UserCard, error) {
 	ucSlice := []user.UserCard{}
-	rows, err := r.db.Query(`
-		SELECT 
+	rows, err := r.db.QueryContext(
+		ctx,
+		`SELECT 
 		u.full_name, 
 		u.password, 
 		u.phone_number,
@@ -61,8 +62,9 @@ func (r *PostgresRepository) ListUsers(ctx context.Context) ([]user.UserCard, er
 }
 
 func (r *PostgresRepository) AddCard(ctx context.Context, c user.Card) error {
-	_, err := r.db.Exec(`
-		INSERT INTO card 
+	_, err := r.db.ExecContext(
+		ctx,
+		`INSERT INTO card 
 		(id, card_number, balance, owner)
 		VALUES ($1, $2, $3, $4)
 	`, c.ID, c.CardNumber, c.Balance, c.OwnerID,
@@ -79,8 +81,9 @@ func (r *PostgresRepository) AddUser(ctx context.Context, u user.User) error {
 	if err != nil {
 		return err
 	}
-	_, err = r.db.Exec(`
-	INSERT INTO users 
+	_, err = r.db.ExecContext(
+		ctx,
+	`INSERT INTO users 
 	(id, full_name, password, phone_number)
 	VALUES ($1, $2, $3, $4)
 	`, u.ID,
@@ -99,8 +102,8 @@ func (r *PostgresRepository) AddUser(ctx context.Context, u user.User) error {
 func (r *PostgresRepository) GetUser(ctx context.Context, phone, pw string) (user.User, error) {
 
 	u := user.User{}
-	err := r.db.QueryRow(`
-		SELECT * FROM users WHERE phone_number=$1
+	err := r.db.QueryRowContext( ctx,
+	`SELECT * FROM users WHERE phone_number=$1
 	`, phone).Scan(&u.ID, &u.FullName, &u.Password, &u.PhoneNumber, &u.IsAdmin)
 
 	if err != nil {
@@ -167,8 +170,8 @@ func (r *PostgresRepository) AddProducts(ctx context.Context, ps []product.Produ
 
 func (r *PostgresRepository) GetProduct(ctx context.Context, id string) (product.Product, error) {
 	p := product.Product{}
-	err := r.db.QueryRow(`
-		SELECT * FROM product WHERE id=$1 
+	err := r.db.QueryRowContext( ctx,
+		` SELECT * FROM product WHERE id=$1 
 	`, id).Scan(&p.ID, &p.Name, &p.Description, &p.Quantity, &p.Price, &p.OriginalPrice, &p.ImageLink, &p.Category)
 	if err != nil {
 		return p, fmt.Errorf("GetProduct: %w", err)

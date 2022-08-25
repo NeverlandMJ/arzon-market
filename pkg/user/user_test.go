@@ -75,9 +75,10 @@ func TestService_CreateUser_EmptyInput(t *testing.T) {
 	for _, v := range cases {
 		t.Run(v.name, func(t *testing.T) {
 			t.Helper()
-			user, err := user.NewUser(v.args.Name, v.args.Password, v.args.PhoneNumber)
+			got, err := user.NewUser(v.args.Name, v.args.Password, v.args.PhoneNumber)
+			v.want.ID = got.ID
 			require.Equal(t, v.err, err)
-			require.Equal(t, v.want, *user)
+			require.Equal(t, v.want, *got)
 		})
 	}
 
